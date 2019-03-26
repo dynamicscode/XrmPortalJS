@@ -39,7 +39,7 @@ Xrm.Portal = {
                 var vid = l + this.postFix;
                 Page_Validators = $.grep(Page_Validators, 
                     function (e) {
-                        return ($(e).prop('controltovalidate' == "" && $(e).prop("id") != vid )) 
+                        return $(e).prop('controltovalidate') != "" && $(e).prop('id') != vid;
                     }
                 );
             },
@@ -53,7 +53,7 @@ Xrm.Portal = {
                 $(g).attr("class", "info required");
                 Page_Validators = $.grep(Page_Validators, 
                     function (e) {
-                        return ($(e).prop('controltovalidate' == "" && $(e).prop("id") != vid )) 
+                        return $(e).prop('controltovalidate') != "" && $(e).prop('id') != vid;
                     }
                 );
                 
