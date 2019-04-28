@@ -94,7 +94,7 @@ Xrm.Portal = {
           var e = events[i];
           if (e.hasOwnProperty("t") && e.hasOwnProperty("f")) {
             console.log("Event wireup -> c: " + e.c + ", t: " + e.t + ", f: " + e.f);
-            var c = Xrm.Portal.Form.get(c); //CHECK
+            var c = Xrm.Portal.Utility.Selector.getByControlId(e.c); //CHECK
             switch (e.t) {
               case Xrm.Portal.EventType.OnChange:
                 this.attachOnChange(c, e.f);
@@ -112,6 +112,10 @@ Xrm.Portal = {
         console.log("attachOnChange -> control: " + control);
         control.change(callback);
         control.trigger("change");
+      },
+      removeOnChange: function(control) {
+        console.log("attachOnChange -> control: " + control);
+        control.off("change");
       }
     }
   },
@@ -289,6 +293,12 @@ Xrm.Portal = {
           Xrm.Portal.Utility.Validation.setValidation(g, this, customFunction, customMessage) :
           Xrm.Portal.Utility.Validation.removeValidation(g, this);
       };
+      this.attachOnChange = function(callback) {
+        Xrm.Portal.Utility.Event.attachOnChange(this.c, callback);
+      };
+      this.removeOnChange = function() {
+        Xrm.Portal.Utility.Event.removeOnChange(this.c);
+      };
     },
     Lookup: function(c) {
       this.s = Xrm.Portal.Utility.Selector;
@@ -331,6 +341,12 @@ Xrm.Portal = {
           Xrm.Portal.Utility.Validation.setValidation(g, this, customFunction, customMessage) :
           Xrm.Portal.Utility.Validation.removeValidation(g, this);
       };
+      this.attachOnChange = function(callback) {
+        Xrm.Portal.Utility.Event.attachOnChange(this.cL, callback);
+      };
+      this.removeOnChange = function() {
+        Xrm.Portal.Utility.Event.removeOnChange(this.cL);
+      };
     },
     Checkbox: function(c) {
       this.s = Xrm.Portal.Utility.Selector;
@@ -357,6 +373,12 @@ Xrm.Portal = {
         isRequired ?
           Xrm.Portal.Utility.Validation.setValidation(g, this, customFunction, customMessage) :
           Xrm.Portal.Utility.Validation.removeValidation(g, this);
+      };
+      this.attachOnChange = function(callback) {
+        Xrm.Portal.Utility.Event.attachOnChange(this.c, callback);
+      };
+      this.removeOnChange = function() {
+        Xrm.Portal.Utility.Event.removeOnChange(this.c);
       };
     },
     Radio: function(c) {
@@ -385,6 +407,12 @@ Xrm.Portal = {
           Xrm.Portal.Utility.Validation.setValidation(g, this, customFunction, customMessage) :
           Xrm.Portal.Utility.Validation.removeValidation(g, this);
       };
+      this.attachOnChange = function(callback) {
+        Xrm.Portal.Utility.Event.attachOnChange(this.c, callback);
+      };
+      this.removeOnChange = function() {
+        Xrm.Portal.Utility.Event.removeOnChange(this.c);
+      };
     },
     DatetimePicker: function(c) {
       this.s = Xrm.Portal.Utility.Selector;
@@ -411,6 +439,12 @@ Xrm.Portal = {
         isRequired ?
           Xrm.Portal.Utility.Validation.setValidation(g, this, customFunction, customMessage) :
           Xrm.Portal.Utility.Validation.removeValidation(g, this);
+      };
+      this.attachOnChange = function(callback) {
+        Xrm.Portal.Utility.Event.attachOnChange(this.c, callback);
+      };
+      this.removeOnChange = function() {
+        Xrm.Portal.Utility.Event.removeOnChange(this.c);
       };
     },
   },
