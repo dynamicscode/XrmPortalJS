@@ -53,3 +53,8 @@ Xrm.Portal.Form.Validation.compareDates(mainattributename, subattributename, mes
 ```
 Xrm.Portal.Form.Validation.setNumberRange(attributename, min, max, message, [isRequired])
 ```
+
+## User
+```
+Xrm.Portal.User.getAsync() => promise
+```
