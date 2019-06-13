@@ -1,7 +1,28 @@
 var Xrm = Xrm || {};
 
 Xrm.Portal = {
+  User: {
+    getAsync: async function() {
+      var t = await Xrm.Portal.Utility.Auth.get();
+      return (Xrm.Portal.Utility.Auth.decode(t));
+    }
+  },
   Utility: {
+    Auth: {
+      /*authorize: function() {
+      },*/
+      decode: function(token) {
+        var base64Url = token.split('.')[1];
+        var base64 = decodeURIComponent(atob(base64Url).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+    
+        return JSON.parse(base64);
+      },
+      get: function() {
+        return $.get("/_services/auth/token");
+      }
+    },
     Selector: {
       appendSelector: function(id) {
         return "#" + id;
@@ -46,21 +67,21 @@ Xrm.Portal = {
           }
         );
       },
-      setValidation: function(groupObj, control, validationFunction, customMessage) {
+      setValidation: function(groupObj, control, isRequired, validationFunction, customMessage) {
         var id = control.id;
         var l = Xrm.Portal.Utility.Selector.appendLabel(id);
         var vid = l + this.postFix;
         var g = groupObj;
         var c = Xrm.Portal.Utility.Selector.getByControlId(id);
 
-        $(g).attr("class", "info required");
+        isRequired && $(g).attr("class", "info required");
         Page_Validators = $.grep(Page_Validators,
           function(e) {
             return $(e).prop('controltovalidate') != "" && $(e).prop('id') != vid;
           }
         );
 
-        var vF = validationFunction == null ? function() {
+        var vF = validationFunction == null && isRequired ? function() {
           return Xrm.Portal.Utility.Validation.required(control)
         } : validationFunction;
 
@@ -140,6 +161,45 @@ Xrm.Portal = {
     }
   },
   Form: {
+    Validation: {
+      assertRegex: function(cid, exp, message, isRequired) {
+        Xrm.Portal.Form.get(cid).setRequired(isRequired, function() { 
+          if (!isRequired && Xrm.Portal.Form.get(cid).getValue() == "") return true;
+          else return exp.test(Xrm.Portal.Form.get(cid).getValue());
+        }, message);
+      },
+      denyPastDate: function(cid, message, isRequired) {
+        Xrm.Portal.Form.get(cid).setRequired(isRequired, function() {
+          if (!isRequired && Xrm.Portal.Form.get(cid).getValue() == "") return true;
+          else return new Date() <= new Date(Xrm.Portal.Form.get(cid).getValue());
+        }, message);
+      }, 
+      denyFutureDate: function(cid, message, isRequired) {
+        Xrm.Portal.Form.get(cid).setRequired(isRequired, function() {
+          if (!isRequired && Xrm.Portal.Form.get(cid).getValue() == "") return true;
+          else return new Date() >= new Date(Xrm.Portal.Form.get(cid).getValue());
+        }, message);
+      }, 
+      compareDates: function(mainid, subid, message, isRequired) {
+        Xrm.Portal.Form.get(mainid).setRequired(isRequired, function() {
+          if (!isRequired && Xrm.Portal.Form.get(mainid).getValue() == "") return true;
+          else return new Date(Xrm.Portal.Form.get(mainid).getValue()) > new Date(Xrm.Portal.Form.get(subid).getValue())
+        }, message);
+      },
+      setNumberRange: function(cid, min, max, message, isRequired) {
+        Xrm.Portal.Form.get(cid).setRequired(isRequired, function() {
+          var isMin = true, isMax = true;
+          if (min != undefined) {
+            isMin = Xrm.Portal.Form.get(cid).getValue() >= min;
+          }
+          if (max != undefined) {
+            isMax = Xrm.Portal.Form.get(cid).getValue() <= max;
+          }
+          if (!isRequired && Xrm.Portal.Form.get(cid).getValue() == "") return true;
+          else return isMin && isMax;
+        }, message);
+      }
+    },
     get: function(id) {
       var c = Xrm.Portal.Utility.Selector.getByControlId(id);
       var ct, v;
@@ -289,8 +349,8 @@ Xrm.Portal = {
       };
       this.setRequired = function(isRequired, customFunction, customMessage) {
         var g = c.parent().siblings(".info");
-        isRequired ?
-          Xrm.Portal.Utility.Validation.setValidation(g, this, customFunction, customMessage) :
+        isRequired || customFunction != undefined ?
+          Xrm.Portal.Utility.Validation.setValidation(g, this, isRequired, customFunction, customMessage) :
           Xrm.Portal.Utility.Validation.removeValidation(g, this);
       };
       this.attachOnChange = function(callback) {
@@ -337,8 +397,8 @@ Xrm.Portal = {
       };
       this.setRequired = function(isRequired, customFunction, customMessage) {
         var g = this.cL.parent().parent().siblings(".info");
-        isRequired ?
-          Xrm.Portal.Utility.Validation.setValidation(g, this, customFunction, customMessage) :
+        isRequired || customFunction != undefined ?
+          Xrm.Portal.Utility.Validation.setValidation(g, this, isRequired, customFunction, customMessage) :
           Xrm.Portal.Utility.Validation.removeValidation(g, this);
       };
       this.attachOnChange = function(callback) {
@@ -370,8 +430,8 @@ Xrm.Portal = {
       };
       this.setRequired = function(isRequired, customFunction, customMessage) {
         var g = c.parent().parent().siblings(".info");
-        isRequired ?
-          Xrm.Portal.Utility.Validation.setValidation(g, this, customFunction, customMessage) :
+        isRequired || customFunction != undefined ?
+          Xrm.Portal.Utility.Validation.setValidation(g, this, isRequired, customFunction, customMessage) :
           Xrm.Portal.Utility.Validation.removeValidation(g, this);
       };
       this.attachOnChange = function(callback) {
@@ -403,8 +463,8 @@ Xrm.Portal = {
       };
       this.setRequired = function(isRequired, customFunction, customMessage) {
         var g = c.parent().siblings(".info");
-        isRequired ?
-          Xrm.Portal.Utility.Validation.setValidation(g, this, customFunction, customMessage) :
+        isRequired || customFunction != undefined ?
+          Xrm.Portal.Utility.Validation.setValidation(g, this, isRequired, customFunction, customMessage) :
           Xrm.Portal.Utility.Validation.removeValidation(g, this);
       };
       this.attachOnChange = function(callback) {
@@ -436,8 +496,8 @@ Xrm.Portal = {
       };
       this.setRequired = function(isRequired, customFunction, customMessage) {
         var g = c.parent().siblings(".info");
-        isRequired ?
-          Xrm.Portal.Utility.Validation.setValidation(g, this, customFunction, customMessage) :
+        isRequired || customFunction != undefined ?
+          Xrm.Portal.Utility.Validation.setValidation(g, this, isRequired, customFunction, customMessage) :
           Xrm.Portal.Utility.Validation.removeValidation(g, this);
       };
       this.attachOnChange = function(callback) {
