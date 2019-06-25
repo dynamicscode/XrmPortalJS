@@ -456,7 +456,7 @@ Xrm.Portal = {
         return this.c.children(":checked").val();
       };
       this.setValue = function(value) {
-        this.c.children(this.s.appendSelector(this.id) + "_" + (--value)).attr("checked", true);
+        this.c.children("[value*=" + value + "]").attr("checked", true);
       };
       this.setVisible = function(isVisible, isMandatory) {
         var g = this.c.parent().parent();
