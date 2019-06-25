@@ -23,6 +23,9 @@ Xrm.Portal = {
         return $.get("/_services/auth/token");
       }
     },
+    hasPage_Validators: function() {
+      return typeof(Page_Validators) !== typeof(undefined);
+    },
     Selector: {
       appendSelector: function(id) {
         return "#" + id;
@@ -61,11 +64,13 @@ Xrm.Portal = {
         $(groupObj).attr("class", "info");
         var l = Xrm.Portal.Utility.Selector.appendLabel(control.id);
         var vid = l + this.postFix;
-        Page_Validators = $.grep(Page_Validators,
-          function(e) {
-            return $(e).prop('controltovalidate') != "" && $(e).prop('id') != vid;
-          }
-        );
+        if (Xrm.Portal.Utility.hasPage_Validators()) {
+          Page_Validators = $.grep(Page_Validators,
+            function(e) {
+              return $(e).prop('controltovalidate') != "" && $(e).prop('id') != vid;
+            }
+          );
+        }
       },
       setValidation: function(groupObj, control, isRequired, validationFunction, customMessage) {
         var id = control.id;
@@ -75,37 +80,37 @@ Xrm.Portal = {
         var c = Xrm.Portal.Utility.Selector.getByControlId(id);
 
         isRequired && $(g).attr("class", "info required");
-        Page_Validators = $.grep(Page_Validators,
-          function(e) {
-            return $(e).prop('controltovalidate') != "" && $(e).prop('id') != vid;
-          }
-        );
+        if (Xrm.Portal.Utility.hasPage_Validators()) {
+          Page_Validators = $.grep(Page_Validators,
+            function(e) {
+              return $(e).prop('controltovalidate') != "" && $(e).prop('id') != vid;
+            }
+          );
 
-        var vF = validationFunction == null && isRequired ? function() {
-          return Xrm.Portal.Utility.Validation.required(control)
-        } : validationFunction;
-
-        //retrive lable if there is no custom message
-        var m = customMessage == null ? $(g).children("label").html() + " is a required field." : customMessage;
-
-        if (typeof(Page_Validators) == 'undefined') return;
-        // Create new validator
-        var nv = document.createElement('span');
-        nv.style.display = "none";
-        nv.id = vid;
-        nv.controltovalidate = id;
-        nv.errormessage = "<a href='#" + l + "'>" + m + "</a>";
-        nv.validationGroup = "";
-        nv.initialvalue = "";
-        nv.evaluationfunction = vF;
-
-        // Add the new validator to the page validators array:
-        Page_Validators.push(nv);
-
-        // Wire-up the click event handler of the validation summary link
-        $("a[href='#" + l + "']").on("click", function() {
-          scrollToAndFocus("'" + l + "'", "'" + id + "'");
-        });
+          var vF = validationFunction == null && isRequired ? function() {
+            return Xrm.Portal.Utility.Validation.required(control)
+          } : validationFunction;
+  
+          //retrive lable if there is no custom message
+          var m = customMessage == null ? $(g).children("label").html() + " is a required field." : customMessage;
+          // Create new validator
+          var nv = document.createElement('span');
+          nv.style.display = "none";
+          nv.id = vid;
+          nv.controltovalidate = id;
+          nv.errormessage = "<a href='#" + l + "'>" + m + "</a>";
+          nv.validationGroup = "";
+          nv.initialvalue = "";
+          nv.evaluationfunction = vF;
+  
+          // Add the new validator to the page validators array:
+          Page_Validators.push(nv);
+  
+          // Wire-up the click event handler of the validation summary link
+          $("a[href='#" + l + "']").on("click", function() {
+            scrollToAndFocus("'" + l + "'", "'" + id + "'");
+          });
+        }
       },
     },
     Event: {
@@ -451,7 +456,7 @@ Xrm.Portal = {
         return this.c.children(":checked").val();
       };
       this.setValue = function(value) {
-        this.c.children(this.s.appendSelector() + "_" + (+value)).attr("checked", true);
+        this.c.children(this.s.appendSelector(this.id) + "_" + (--value)).attr("checked", true);
       };
       this.setVisible = function(isVisible, isMandatory) {
         var g = this.c.parent().parent();
