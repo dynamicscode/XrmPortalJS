@@ -29,3 +29,32 @@ Xrm.Portal.Form.get(attributename).setRequired(bool, function, message); //A cus
 Xrm.Portal.Form.get(attributename).attachOnChange(callback);
 Xrm.Portal.Form.get(attributename).removeOnChange();
 ```
+## Validations
+### Regular Expressions
+```
+Xrm.Portal.Form.Validation.assertRegex(attributename, RegEx, message, [isRequired])
+```
+### Block past date
+```
+Xrm.Portal.Form.Validation.denyPastDate(attributename, message, [isRequired])
+```
+
+### Block future date
+```
+Xrm.Portal.Form.Validation.denyFutureDate(attributename, message, [isRequired])
+```
+
+### Compare main and sub. Main must be later than sub.
+```
+Xrm.Portal.Form.Validation.compareDates(mainattributename, subattributename, message, [isRequired])
+```
+
+### Set range to number
+```
+Xrm.Portal.Form.Validation.setNumberRange(attributename, min, max, message, [isRequired])
+```
+
+## User
+```
+Xrm.Portal.User.getAsync() => promise
+```
