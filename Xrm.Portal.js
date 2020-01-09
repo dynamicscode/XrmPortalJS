@@ -376,43 +376,6 @@ Xrm.Portal = {
         Xrm.Portal.Utility.Event.removeOnChange(this.c);
         return this;
       };
-      this.updateValue = function(c) {
-        c.setValue(c.pcf.getOutputs().value);
-        this.pcf.updateView({
-          parameters: {
-            value: {
-              raw: this.getValue()                
-            }
-          }
-        });
-      };
-      this.useControl = function(tagName) {
-        this.pcf = useComponent(tagName);
-
-        this.pcf.init({
-            parameters: {
-              value: {
-                raw: this.getValue()
-              }
-            }
-          },
-          () => this.updateValue(this),
-          "",
-          $(this.c).parent()[0]
-        );
-        this.pcf.updateView({
-          parameters: {
-            value: {
-              raw: this.getValue()                
-            }
-          }
-        });
-        this.control().setAttribute('style', 'display:none;');
-        return this;
-      };
-      this.control = function () {
-        return this.c[0];
-      };
       this.setValidationGroup = function(g) {
         this.vg = g;
         return this;
@@ -615,41 +578,3 @@ Xrm.Portal = {
     OnClick: 2
   }
 };
-
-class CustomElement extends HTMLElement {
-  get value() {
-    return this.linkedNode ? this.linkedNode.getValue() : '';
-  }
-
-  updateValue(v) {
-    console.log('CC updateValue ' + v);
-    this.linkedNode.setValue(v);
-  }
-
-  set link(id) {
-    this.linkedNode = Xrm.Portal.Form.get(id);
-    this.linkedNode.control().setAttribute('style', 'display:none;');
-    this.updateView();
-  }
-}
-
-var components = [];
-
-function registerComponent() {
-  //customElements.define(tagName, type);
-  components.push({ type: 'ReactSample', control : dynamicscode.ReactControlDemo});
-}
-
-function useComponent(type) {
-  for(var i = 0; i < components.length; i++) {
-    console.log(components[i].type);
-    if (components[i].type === type) {
-      var c = components[i].control;
-        return new c();
-    }
-  }
-}
-
-registerComponent();
-
-//Xrm.Portal.Form.get('AttributeName').useControl('ReactSample');
