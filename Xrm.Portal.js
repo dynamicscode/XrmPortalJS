@@ -341,6 +341,7 @@ Xrm.Portal = {
       this.cc = document.getElementById(this.id + '_cc');
       this.c = c;
       this.vg = "";
+      this.pcf = "";
 
       this.getValue = function () {
         return this.c.val();
@@ -375,8 +376,38 @@ Xrm.Portal = {
         Xrm.Portal.Utility.Event.removeOnChange(this.c);
         return this;
       };
+      this.updateValue = function(c) {
+        c.setValue(c.pcf.getOutputs().value);
+        this.pcf.updateView({
+          parameters: {
+            value: {
+              raw: this.getValue()                
+            }
+          }
+        });
+      };
       this.useControl = function(tagName) {
-        useComponent(this.id, tagName);
+        this.pcf = useComponent(tagName);
+
+        this.pcf.init({
+            parameters: {
+              value: {
+                raw: this.getValue()
+              }
+            }
+          },
+          () => this.updateValue(this),
+          "",
+          $(this.c).parent()[0]
+        );
+        this.pcf.updateView({
+          parameters: {
+            value: {
+              raw: this.getValue()                
+            }
+          }
+        });
+        this.control().setAttribute('style', 'display:none;');
         return this;
       };
       this.control = function () {
@@ -602,13 +633,23 @@ class CustomElement extends HTMLElement {
   }
 }
 
-function registerComponent(tagName, type) {
-  customElements.define(tagName, type);
+var components = [];
+
+function registerComponent() {
+  //customElements.define(tagName, type);
+  components.push({ type: 'ReactSample', control : dynamicscode.ReactControlDemo});
 }
 
-function useComponent(id, tagName) {
-  var ctrl = document.createElement(tagName);
-  ctrl.id = id + '_cc';
-  ctrl.link = id;
-  Xrm.Portal.Form.get(id).c[0].parentElement.append(ctrl);
+function useComponent(type) {
+  for(var i = 0; i < components.length; i++) {
+    console.log(components[i].type);
+    if (components[i].type === type) {
+      var c = components[i].control;
+        return new c();
+    }
+  }
 }
+
+registerComponent();
+
+Xrm.Portal.Form.get('jobtitle').useControl('ReactSample');
