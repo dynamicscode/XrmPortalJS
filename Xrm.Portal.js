@@ -341,7 +341,6 @@ Xrm.Portal = {
       this.cc = document.getElementById(this.id + '_cc');
       this.c = c;
       this.vg = "";
-      this.pcf = "";
 
       this.getValue = function () {
         return this.c.val();
