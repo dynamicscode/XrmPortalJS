@@ -1,6 +1,16 @@
 # Overview
 A JavaScript library for Microsoft CRM Portals. To write basic functions like show and hide in Microsoft CRM Portals, we need to rely on jQuery for extensive manipuliation of DOM. The library provides these functionality in simple, clear and readable syntaxes. The library will help developers who are familar with Dynamics 365 Client Script.
 
+# PCF Proof of concept code
+## Register more controls
+```
+components.push({ type: 'UniqueName', control : controlNameFromBundle.js});
+```
+## Use controls
+```
+Xrm.Portal.Form.get(attributename).useControl('UniqueNameOfRegisteredComponent')
+```
+
 # Command samples
 ## Get value of an attribute
 ```

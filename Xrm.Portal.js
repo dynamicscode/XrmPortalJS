@@ -651,5 +651,3 @@ function useComponent(type) {
 }
 
 registerComponent();
-
-//Xrm.Portal.Form.get('AttributeName').useControl('ReactSample');
