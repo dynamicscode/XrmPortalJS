@@ -29,6 +29,10 @@ Xrm.Portal.Form.get(attributename).setRequired(bool, function, message); //A cus
 Xrm.Portal.Form.get(attributename).attachOnChange(callback);
 Xrm.Portal.Form.get(attributename).removeOnChange();
 ```
+## Method chaining
+```
+Xrm.Portal.Form.get(attributename).setValue(object).setVisible(bool).setRequired(bool);
+```
 ## Validations
 ### Regular Expressions
 ```
