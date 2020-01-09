@@ -72,7 +72,7 @@ Xrm.Portal = {
           );
         }
       },
-      setValidation: function (groupObj, control, isRequired, validationFunction, customMessage) {
+      setValidation: function (groupObj, control, isRequired, validationGroup, validationFunction, customMessage) {
         var id = control.id;
         var l = Xrm.Portal.Utility.Selector.appendLabel(id);
         var vid = l + this.postFix;
@@ -87,6 +87,8 @@ Xrm.Portal = {
             }
           );
 
+          validationGroup = (validationGroup == null || validationGroup == "" ) && Page_Validators.length > 0 ? Page_Validators[0].validationGroup : validationGroup;
+
           var vF = validationFunction == null && isRequired ? function () {
             return Xrm.Portal.Utility.Validation.required(control)
           } : validationFunction;
@@ -99,7 +101,7 @@ Xrm.Portal = {
           nv.id = vid;
           nv.controltovalidate = id;
           nv.errormessage = "<a href='#" + l + "'>" + m + "</a>";
-          nv.validationGroup = "";
+          nv.validationGroup = validationGroup;
           nv.initialvalue = "";
           nv.evaluationfunction = vF;
 
@@ -338,6 +340,7 @@ Xrm.Portal = {
 
       this.cc = document.getElementById(this.id + '_cc');
       this.c = c;
+      this.vg = "";
 
       this.getValue = function () {
         return this.c.val();
@@ -345,32 +348,43 @@ Xrm.Portal = {
       this.setValue = function (value) {
         this.c.val(value);
         if (this.cc != null) this.cc.updateView();
+        return this;
       };
       this.setVisible = function (isVisible, isMandatory) {
         var g = this.c.parent().parent();
         this.setRequired(isMandatory);
         isVisible ? g.show() : g.hide();
+        return this;
       };
       this.setDisable = function (isDisabled) {
         this.c.prop('disabled', isDisabled);
+        return this;
       };
       this.setRequired = function (isRequired, customFunction, customMessage) {
         var g = c.parent().siblings(".info");
         isRequired || customFunction != undefined ?
-          Xrm.Portal.Utility.Validation.setValidation(g, this, isRequired, customFunction, customMessage) :
+          Xrm.Portal.Utility.Validation.setValidation(g, this, isRequired, this.vg, customFunction, customMessage) :
           Xrm.Portal.Utility.Validation.removeValidation(g, this);
+        return this;
       };
       this.attachOnChange = function (callback) {
         Xrm.Portal.Utility.Event.attachOnChange(this.c, callback);
+        return this;
       };
       this.removeOnChange = function () {
         Xrm.Portal.Utility.Event.removeOnChange(this.c);
+        return this;
       };
       this.useControl = function(tagName) {
         useComponent(this.id, tagName);
+        return this;
       };
       this.control = function () {
         return this.c[0];
+      };
+      this.setValidationGroup = function(g) {
+        this.vg = g;
+        return this;
       };
     },
     Lookup: function (c) {
@@ -380,6 +394,7 @@ Xrm.Portal = {
       this.cL = c;
       this.cN = this.s.getLookupName(this.id);
       this.cE = this.s.getLookupEntity(this.id);
+      this.vg = "";
 
       this.getValue = function () {
         return {
@@ -398,27 +413,37 @@ Xrm.Portal = {
           this.cN.val(name);
           this.cE.val(logicalName);
         }
+        return this;
       };
       this.setVisible = function (isVisible, isMandatory) {
         this.setRequired(isMandatory);
         var g = this.cL.parent().parent().parent();
         isVisible ? g.show() : g.hide();
+        return this;
       };
       this.setDisable = function (isDisabled) {
         this.cN.prop('disabled', isDisabled);
         this.cN.siblings('div.input-group-btn').toggle(!isDisabled);
+        return this;
       };
       this.setRequired = function (isRequired, customFunction, customMessage) {
         var g = this.cL.parent().parent().siblings(".info");
         isRequired || customFunction != undefined ?
-          Xrm.Portal.Utility.Validation.setValidation(g, this, isRequired, customFunction, customMessage) :
+          Xrm.Portal.Utility.Validation.setValidation(g, this, isRequired, this.vg, customFunction, customMessage) :
           Xrm.Portal.Utility.Validation.removeValidation(g, this);
+          return this;
       };
       this.attachOnChange = function (callback) {
         Xrm.Portal.Utility.Event.attachOnChange(this.cL, callback);
+        return this;
       };
       this.removeOnChange = function () {
         Xrm.Portal.Utility.Event.removeOnChange(this.cL);
+        return this;
+      };
+      this.setValidationGroup = function(g) {
+        this.vg = g;
+        return this;
       };
     },
     Checkbox: function (c) {
@@ -426,32 +451,43 @@ Xrm.Portal = {
       this.id = $(c).prop("id");
 
       this.c = c;
+      this.vg = "";
 
       this.getValue = function () {
         return this.c.prop("checked");
       };
       this.setValue = function (value) {
         this.c.prop("checked", value);
+        return this;
       };
       this.setVisible = function (isVisible, isMandatory) {
         var g = this.c.parent().parent().parent();
         this.setRequired(isMandatory);
         isVisible ? g.show() : g.hide();
+        return this;
       };
       this.setDisable = function (isDisabled) {
         this.c.prop('disabled', isDisabled);
+        return this;
       };
       this.setRequired = function (isRequired, customFunction, customMessage) {
         var g = c.parent().parent().siblings(".info");
         isRequired || customFunction != undefined ?
-          Xrm.Portal.Utility.Validation.setValidation(g, this, isRequired, customFunction, customMessage) :
+          Xrm.Portal.Utility.Validation.setValidation(g, this, isRequired, this.vg, customFunction, customMessage) :
           Xrm.Portal.Utility.Validation.removeValidation(g, this);
+        return this;
       };
       this.attachOnChange = function (callback) {
         Xrm.Portal.Utility.Event.attachOnChange(this.c, callback);
+        return this;
       };
       this.removeOnChange = function () {
         Xrm.Portal.Utility.Event.removeOnChange(this.c);
+        return this;
+      };
+      this.setValidationGroup = function(g) {
+        this.vg = g;
+        return this;
       };
     },
     Radio: function (c) {
@@ -459,32 +495,43 @@ Xrm.Portal = {
       this.id = $(c).prop("id");
 
       this.c = c;
+      this.vg = "";
 
       this.getValue = function () {
         return this.c.children(":checked").val();
       };
       this.setValue = function (value) {
         this.c.children("[value*=" + value + "]").attr("checked", true);
+        return this;
       };
       this.setVisible = function (isVisible, isMandatory) {
         var g = this.c.parent().parent();
         this.setRequired(isMandatory);
         isVisible ? g.show() : g.hide();
+        return this;
       };
       this.setDisable = function (isDisabled) {
         this.c.children().prop("disabled", isDisabled);
+        return this;
       };
       this.setRequired = function (isRequired, customFunction, customMessage) {
         var g = c.parent().siblings(".info");
         isRequired || customFunction != undefined ?
-          Xrm.Portal.Utility.Validation.setValidation(g, this, isRequired, customFunction, customMessage) :
+          Xrm.Portal.Utility.Validation.setValidation(g, this, isRequired, this.vg, customFunction, customMessage) :
           Xrm.Portal.Utility.Validation.removeValidation(g, this);
+        return this;
       };
       this.attachOnChange = function (callback) {
         Xrm.Portal.Utility.Event.attachOnChange(this.c, callback);
+        return this;
       };
       this.removeOnChange = function () {
         Xrm.Portal.Utility.Event.removeOnChange(this.c);
+        return this;
+      };
+      this.setValidationGroup = function(g) {
+        this.vg = g;
+        return this;
       };
     },
     DatetimePicker: function (c) {
@@ -492,32 +539,43 @@ Xrm.Portal = {
       this.id = $(c).prop("id");
 
       this.c = c;
+      this.vg = "";
 
       this.getValue = function () {
         return this.c.val();
       };
       this.setValue = function (value) {
         this.c.val(value);
+        return this;
       };
       this.setVisible = function (isVisible, isMandatory) {
         var g = this.c.parent().parent();
         this.setRequired(isMandatory);
         isVisible ? g.show() : g.hide();
+        return this;
       };
       this.setDisable = function (isDisabled) {
         this.s.getTextLabel(this.id).prop('disabled', isDisabled);
+        return this;
       };
       this.setRequired = function (isRequired, customFunction, customMessage) {
         var g = c.parent().siblings(".info");
         isRequired || customFunction != undefined ?
-          Xrm.Portal.Utility.Validation.setValidation(g, this, isRequired, customFunction, customMessage) :
+          Xrm.Portal.Utility.Validation.setValidation(g, this, isRequired, this.vg, customFunction, customMessage) :
           Xrm.Portal.Utility.Validation.removeValidation(g, this);
+        return this;
       };
       this.attachOnChange = function (callback) {
         Xrm.Portal.Utility.Event.attachOnChange(this.c, callback);
+        return this;
       };
       this.removeOnChange = function () {
         Xrm.Portal.Utility.Event.removeOnChange(this.c);
+        return this;
+      };
+      this.setValidationGroup = function(g) {
+        this.vg = g;
+        return this;
       };
     },
   },
