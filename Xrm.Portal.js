@@ -12,12 +12,15 @@ Xrm.Portal = {
       /*authorize: function() {
       },*/
       decode: function (token) {
-        var base64Url = token.split('.')[1];
-        var base64 = decodeURIComponent(atob(base64Url).split('').map(function (c) {
-          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-        }).join(''));
-
-        return JSON.parse(base64);
+        if (token !== "") {
+          var base64Url = token.split('.')[1];
+          var base64 = decodeURIComponent(atob(base64Url).split('').map(function (c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+          }).join(''));
+  
+          return JSON.parse(base64);
+        }
+        throw "No login user is detected.";
       },
       get: function () {
         return $.get("/_services/auth/token");
