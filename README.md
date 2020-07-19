@@ -1,5 +1,5 @@
 # Overview
-A JavaScript library for Microsoft CRM Portals. To write basic functions like show and hide in Microsoft CRM Portals, we need to rely on jQuery for extensive manipuliation of DOM. The library provides these functionality in simple, clear and readable syntaxes. The library will help developers who are familar with Dynamics 365 Client Script.
+A JavaScript library for Power Apps portals (previously Microsoft CRM Portals). To write basic functions like show and hide in Power Apps portals, we need to rely on jQuery for extensive manipuliation of DOM. The library provides these functionality in simple, clear and readable syntaxes. The library will help developers who are familar with Power Apps client script.
 
 # Command samples
 ## Get value of an attribute
@@ -61,4 +61,10 @@ Xrm.Portal.Form.Validation.setNumberRange(attributename, min, max, message, [isR
 ## User
 ```
 Xrm.Portal.User.getAsync() => promise
+```
+
+## Transform text fields to canvas
+The method transforms a text field into a canvas, allowing users to draw lines or sign. Base64 string of canvas will be set to the underlying text field.
+```
+Xrm.Portal.Form.get(fieldName).transformToCanvas();
 ```
