@@ -17,7 +17,7 @@ Xrm.Portal = {
           var base64 = decodeURIComponent(atob(base64Url).split('').map(function (c) {
             return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
           }).join(''));
-  
+
           return JSON.parse(base64);
         }
         throw "No login user is detected.";
@@ -90,7 +90,7 @@ Xrm.Portal = {
             }
           );
 
-          validationGroup = (validationGroup == null || validationGroup == "" ) && Page_Validators.length > 0 ? Page_Validators[0].validationGroup : validationGroup;
+          validationGroup = (validationGroup == null || validationGroup == "") && Page_Validators.length > 0 ? Page_Validators[0].validationGroup : validationGroup;
 
           var vF = validationFunction == null && isRequired ? function () {
             return Xrm.Portal.Utility.Validation.required(control)
@@ -378,10 +378,18 @@ Xrm.Portal = {
         Xrm.Portal.Utility.Event.removeOnChange(this.c);
         return this;
       };
-      this.setValidationGroup = function(g) {
+      this.setValidationGroup = function (g) {
         this.vg = g;
         return this;
       };
+      this.transformToCanvas = function () {
+        this.c.hide();
+        if (this.c.parent().children().last()[0].tagName !== "CANVAS") {
+          var canvasId = this.id + "Canvas";
+          this.c.parent().append("<canvas id=" + canvasId + "></canvas>");
+          Xrm.Portal.Control.Canvas(this.id);
+        }
+      }
     },
     Lookup: function (c) {
       this.s = Xrm.Portal.Utility.Selector;
@@ -427,7 +435,7 @@ Xrm.Portal = {
         isRequired || customFunction != undefined ?
           Xrm.Portal.Utility.Validation.setValidation(g, this, isRequired, this.vg, customFunction, customMessage) :
           Xrm.Portal.Utility.Validation.removeValidation(g, this);
-          return this;
+        return this;
       };
       this.attachOnChange = function (callback) {
         Xrm.Portal.Utility.Event.attachOnChange(this.cL, callback);
@@ -437,7 +445,7 @@ Xrm.Portal = {
         Xrm.Portal.Utility.Event.removeOnChange(this.cL);
         return this;
       };
-      this.setValidationGroup = function(g) {
+      this.setValidationGroup = function (g) {
         this.vg = g;
         return this;
       };
@@ -481,7 +489,7 @@ Xrm.Portal = {
         Xrm.Portal.Utility.Event.removeOnChange(this.c);
         return this;
       };
-      this.setValidationGroup = function(g) {
+      this.setValidationGroup = function (g) {
         this.vg = g;
         return this;
       };
@@ -525,7 +533,7 @@ Xrm.Portal = {
         Xrm.Portal.Utility.Event.removeOnChange(this.c);
         return this;
       };
-      this.setValidationGroup = function(g) {
+      this.setValidationGroup = function (g) {
         this.vg = g;
         return this;
       };
@@ -569,11 +577,99 @@ Xrm.Portal = {
         Xrm.Portal.Utility.Event.removeOnChange(this.c);
         return this;
       };
-      this.setValidationGroup = function(g) {
+      this.setValidationGroup = function (g) {
         this.vg = g;
         return this;
       };
     },
+    Canvas: function (id) {
+      var canvas, context, tool;
+
+      function init(id) {
+        // Find the canvas element.
+        canvas = document.getElementById(id + "Canvas");
+        if (!canvas) {
+          alert('Error: I cannot find the canvas element!');
+          return;
+        }
+
+        if (!canvas.getContext) {
+          alert('Error: no canvas.getContext!');
+          return;
+        }
+
+        // Get the 2D canvas context.
+        context = canvas.getContext('2d');
+        if (!context) {
+          alert('Error: failed to getContext!');
+          return;
+        }
+
+        // Pencil tool instance.
+        tool = new tool_pencil(id, canvas.id);
+
+        // Attach the mousedown, mousemove and mouseup event listeners.
+        canvas.addEventListener('mousedown', ev_canvas, false);
+        canvas.addEventListener('mousemove', ev_canvas, false);
+        canvas.addEventListener('mouseup', ev_canvas, false);
+      }
+
+      // This painting tool works like a drawing pencil which tracks the mouse 
+      // movements.
+      function tool_pencil(id, canvasId) {
+        var id = id;
+        var canvasId = canvasId;
+        var tool = this;
+        this.started = false;
+
+        // This is called when you start holding down the mouse button.
+        // This starts the pencil drawing.
+        this.mousedown = function (ev) {
+          context.beginPath();
+          context.moveTo(ev._x, ev._y);
+          tool.started = true;
+        };
+
+        // This function is called every time you move the mouse. Obviously, it only 
+        // draws if the tool.started state is set to true (when you are holding down 
+        // the mouse button).
+        this.mousemove = function (ev) {
+          if (tool.started) {
+            context.lineTo(ev._x, ev._y);
+            context.stroke();
+          }
+        };
+
+        // This is called when you release the mouse button.
+        this.mouseup = function (ev) {
+          if (tool.started) {
+            tool.mousemove(ev);
+            tool.started = false;
+          }
+          Xrm.Portal.Form.get(id).setValue(document.getElementById(canvasId).toDataURL());
+        };
+      }
+
+      // The general-purpose event handler. This function just determines the mouse 
+      // position relative to the canvas element.
+      function ev_canvas(ev) {
+        if (ev.layerX || ev.layerX == 0) { // Firefox
+          ev._x = ev.layerX;
+          ev._y = ev.layerY;
+        } else if (ev.offsetX || ev.offsetX == 0) { // Opera
+          ev._x = ev.offsetX;
+          ev._y = ev.offsetY;
+        }
+
+        // Call the event handler of the tool.
+        var func = tool[ev.type];
+        if (func) {
+          func(ev);
+        }
+      }
+
+      init(id);
+    }
   },
   EventType: {
     OnChange: 1,
