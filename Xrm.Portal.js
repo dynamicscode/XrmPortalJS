@@ -1,6 +1,71 @@
+(function (webapi, $) {
+  function safeAjax(ajaxOptions) {
+    var deferredAjax = $.Deferred();
+
+    shell.getTokenDeferred().done(function (token) {
+      // add headers for AJAX
+      if (!ajaxOptions.headers) {
+        $.extend(ajaxOptions, {
+          headers: {
+            "__RequestVerificationToken": token
+          }
+        });
+      } else {
+        ajaxOptions.headers["__RequestVerificationToken"] = token;
+      }
+      $.ajax(ajaxOptions)
+        .done(function (data, textStatus, jqXHR) {
+          validateLoginSession(data, textStatus, jqXHR, deferredAjax.resolve);
+        }).fail(deferredAjax.reject); //AJAX
+    }).fail(function () {
+      deferredAjax.rejectWith(this, arguments); // on token failure pass the token AJAX and args
+    });
+
+    return deferredAjax.promise();
+  }
+  webapi.safeAjax = safeAjax;
+})(window.webapi = window.webapi || {}, jQuery)
+
+var PortalWebAPI = {
+  Url: '/_api/',
+  Verb: {
+    POST: 'POST',
+    PATCH: 'PATCH',
+    DELETE: 'DELETE'
+  }
+}
+
 var Xrm = Xrm || {};
 
 Xrm.Portal = {
+  WebAPI: {
+    createRecord: function (datasetName, data, successCallback) {
+      webapi.safeAjax({
+        type: PortalWebAPI.Verb.POST,
+        url: `${PortalWebAPI.Url}${datasetName}`,
+        contentType: "application/json",
+        data: JSON.stringify(data),
+        success: function(r, s, x) { successCallback(x); }
+      });
+    },
+    updateRecord: function (datasetName, id, data, successCallback) {
+      webapi.safeAjax({
+        type: PortalWebAPI.Verb.PATCH,
+        url: `${PortalWebAPI.Url}${datasetName}(${id})`,
+        contentType: "application/json",
+        data: JSON.stringify(data),
+        success: function(r) { successCallback(r); }
+      });
+    },
+    deleteRecord: function (datasetName, id, successCallback) {
+      webapi.safeAjax({
+        type: PortalWebAPI.Verb.DELETE,
+        url: `${PortalWebAPI.Url}${datasetName}(${id})`,
+        contentType: "application/json",
+        success: function(r) { successCallback(r); }
+      })
+    }
+  },
   User: {
     getAsync: async function () {
       var t = await Xrm.Portal.Utility.Auth.get();
