@@ -265,7 +265,7 @@ Xrm.Portal = {
           return this.controlType.Checkbox;
         } else if (c.attr("type") == "hidden") {
           return this.controlType.Lookup;
-        } else if (c.attr("class") != null && (c.attr("class").startsWith("boolean-radio") || c.attr("class").startsWith("picklist horizontal") || c.attr("class").startsWith("picklist vertical"))) {
+        } else if (c.attr("class") != null && (c.attr("class").indexOf("boolean-radio") > -1 || c.attr("class").indexOf("picklist horizontal")  > -1 || c.attr("class").indexOf("picklist vertical") > -1)) {
           return this.controlType.Radio;
         } else {
           return this.controlType.Control;
@@ -502,7 +502,7 @@ Xrm.Portal = {
       this.vg = "";
 
       this.getValue = function () {
-        return this.c.children(":checked").val();
+        return this.c.find("input:checked").val();
       };
       this.setValue = function (value) {
         this.c.children("[value*=" + value + "]").attr("checked", true);
