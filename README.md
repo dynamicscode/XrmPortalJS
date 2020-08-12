@@ -22,6 +22,7 @@ Xrm.Portal.Form.get(attributename).setDisable(bool);
 ## Set required of an attribute
 ```
 Xrm.Portal.Form.get(attributename).setRequired(bool); //Default - a default validation and a default message
+Xrm.Portal.Form.get(attributename).setRequired(bool, function); //A custom validation and a default message
 Xrm.Portal.Form.get(attributename).setRequired(bool, function, message); //A custom validation and a custom message
 ```
 ## Attach/Remove OnChange event of an attribute
