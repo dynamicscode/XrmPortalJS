@@ -2,60 +2,75 @@
 A JavaScript library for Power Apps portals (previously Microsoft CRM Portals). To write basic functions like show and hide in Power Apps portals, we need to rely on jQuery for extensive manipuliation of DOM. The library provides these functionality in simple, clear and readable syntaxes. The library will help developers who are familar with Power Apps client script.
 
 # Command samples
-## Get value of an attribute
+## Get value of a field
 ```
-Xrm.Portal.Form.get(attributename).getValue();
+Xrm.Portal.Form.get(fieldName).getValue();
 ```
-## Set value of an attribute
+## Get JSON data from a quick view
 ```
-Xrm.Portal.Form.get(attributename).setValue(object);
-Xrm.Portal.Form.get(attributename).setValue(id, name, entityLogicalName); //For lookup
+Xrm.Portal.Form.get(quickViewName).getValue();
 ```
-## Show/hide an attribute
+## Set value of a field
 ```
-Xrm.Portal.Form.get(attributename).setVisible(bool);
+Xrm.Portal.Form.get(fieldName).setValue(object);
+Xrm.Portal.Form.get(fieldName).setValue(id, name, entityLogicalName); //For lookup
 ```
-## Disable/enable an attribute
+## Show/hide a field
 ```
-Xrm.Portal.Form.get(attributename).setDisable(bool);
+Xrm.Portal.Form.get(fieldName).setVisible(bool);
 ```
-## Set required of an attribute
+## Disable/enable a field
 ```
-Xrm.Portal.Form.get(attributename).setRequired(bool); //Default - a default validation and a default message
-Xrm.Portal.Form.get(attributename).setRequired(bool, function, message); //A custom validation and a custom message
+Xrm.Portal.Form.get(fieldName).setDisable(bool);
 ```
-## Attach/Remove OnChange event of an attribute
+## Set required of a field
 ```
-Xrm.Portal.Form.get(attributename).attachOnChange(callback);
-Xrm.Portal.Form.get(attributename).removeOnChange();
+Xrm.Portal.Form.get(fieldName).setRequired(bool); //Default - a default validation and a default message
+Xrm.Portal.Form.get(fieldName).setRequired(bool, function, message); //A custom validation and a custom message
+```
+## Configure DateTimePicker options
+```
+Xrm.Portal.Form.get(dateTimeFieldName).getData().options({options});
+Xrm.Portal.Form.get(dateTimeFieldName).getData().options({ sideBySide: true}); //To show date component and time component side by side
+Xrm.Portal.Form.get(dateTimeFieldName).getData().minDate(new Date()); //To disable selecting past date
+```
+Refer to more options [here](https://getdatepicker.com/4/)
+## Get a row count from current page of the sub-grid
+```
+Xrm.Portal.Form.get(subGridName).getRowCountFromCurrentPage();
+```
+## Attach/Remove OnChange event of a field
+```
+Xrm.Portal.Form.get(fieldName).attachOnChange(callback);
+Xrm.Portal.Form.get(fieldName).removeOnChange();
 ```
 ## Method chaining
 ```
-Xrm.Portal.Form.get(attributename).setValue(object).setVisible(bool).setRequired(bool);
+Xrm.Portal.Form.get(fieldName).setValue(object).setVisible(bool).setRequired(bool);
 ```
 ## Validations
 ### Regular Expressions
 ```
-Xrm.Portal.Form.Validation.assertRegex(attributename, RegEx, message, [isRequired])
+Xrm.Portal.Form.Validation.assertRegex(fieldName, RegEx, message, [isRequired])
 ```
 ### Block past date
 ```
-Xrm.Portal.Form.Validation.denyPastDate(attributename, message, [isRequired])
+Xrm.Portal.Form.Validation.denyPastDate(fieldName, message, [isRequired])
 ```
 
 ### Block future date
 ```
-Xrm.Portal.Form.Validation.denyFutureDate(attributename, message, [isRequired])
+Xrm.Portal.Form.Validation.denyFutureDate(fieldName, message, [isRequired])
 ```
 
 ### Compare main and sub. Main must be later than sub.
 ```
-Xrm.Portal.Form.Validation.compareDates(mainattributename, subattributename, message, [isRequired])
+Xrm.Portal.Form.Validation.compareDates(mainFieldName, subFieldName, message, [isRequired])
 ```
 
 ### Set range to number
 ```
-Xrm.Portal.Form.Validation.setNumberRange(attributename, min, max, message, [isRequired])
+Xrm.Portal.Form.Validation.setNumberRange(fieldName, min, max, message, [isRequired])
 ```
 
 ## User
