@@ -6,10 +6,6 @@ A JavaScript library for Power Apps portals (previously Microsoft CRM Portals). 
 ```
 Xrm.Portal.Form.get(fieldName).getValue();
 ```
-## Get JSON data from a quick view
-```
-Xrm.Portal.Form.get(quickViewName).getValue();
-```
 ## Set value of a field
 ```
 Xrm.Portal.Form.get(fieldName).setValue(object);
@@ -38,6 +34,18 @@ Refer to more options [here](https://getdatepicker.com/4/)
 ## Get a row count from current page of the sub-grid
 ```
 Xrm.Portal.Form.get(subGridName).getRowCountFromCurrentPage();
+```
+## Enable a lookup to display its modal dialog on clicking anywhere in the lookup control
+```
+Xrm.Portal.Form.get(lookupName).enableOneClick();
+```
+## Get JSON data from a quick view
+```
+Xrm.Portal.Form.get(quickViewName).getValue();
+```
+## Transform a quick view into AdaptiveCard
+```
+Xrm.Portal.Form.get(quickViewName).renderAdaptiveCard(lookupName, adaptiveCardJSON, dataInJSON);
 ```
 ## Attach/Remove OnChange event of a field
 ```
