@@ -160,18 +160,19 @@ Xrm.Portal = {
       parseTemplate: function(card, data) {
         var str = JSON.stringify(card);
         var matches = str.match(/(\\)?"\$\{.+?\}(\\)?"/gm)
-        for (var m = 0; m < matches.length; m++) {
-          var r = matches[m].match(/[^"${]*(?=})/s);
-          if (r != null && r.length > 0) {
-            str = str.replace(matches[m], data[r[0]]);
+        if (matches != null) {
+          for (var m = 0; m < matches.length; m++) {
+            var r = matches[m].match(/[^"${]*(?=})/s);
+            if (r != null && r.length > 0) {
+              str = str.replace(matches[m], '"' + data[r[0]].replaceAll('"', '\\"') + '"');
+            }
           }
+          matches = str.match(/("(false|true)(.+)\\""(?=,))|("(false|true)(.+)\\""(?=}))/gm);
+          if (matches != null)
+            for (var i = 0; i < matches.length; i++) {
+              str = str.replace(matches[i], '"' + eval(eval(matches[i])) + '"');
+            }
         }
-
-        matches = str.match(/("(false|true)(.+)\\""(?=,))|("(false|true)(.+)\\""(?=}))/gm);
-        for (var i = 0; i < matches.length; i++) {
-          str = str.replace(matches[i], '"' + eval(eval(matches[i])) + '"');
-        }
-
         return JSON.parse(str);
       }
     }
@@ -298,7 +299,7 @@ Xrm.Portal = {
           return this.controlType.Checkbox;
         } else if (c.attr("type") == "hidden") {
           return this.controlType.Lookup;
-        } else if (c.attr("class") != null && (c.attr("class").indexOf("boolean-radio") >= 0 || c.attr("class").indexOf("picklist horizontal") || c.attr("class").indexOf("picklist vertical"))) {
+        } else if (c.attr("class") != null && (c.attr("class").indexOf("boolean-radio") >= 0 || c.attr("class").indexOf("picklist horizontal") >=0 || c.attr("class").indexOf("picklist vertical") >= 0)) {
           return this.controlType.Radio;
         } else if (c.prop('className') == 'subgrid') {
           return this.controlType.Subgrid;
@@ -404,6 +405,7 @@ Xrm.Portal = {
       };
       this.setVisible = function(isVisible, isMandatory) {
         var g = this.c.parent().parent();
+        this.setRequired(isMandatory);
         isVisible ? g.show() : g.hide();
         return this;
       };
@@ -442,7 +444,7 @@ Xrm.Portal = {
 
       this.getValue = function() {
         var values = this.c.contents().find('.form-control');
-        var allowFormats = ['DD/MM/YYYY', 'YYYY/MM/DD'];
+        var allowFormats = ['DD/MM/YYYY', 'YYYY/MM/DD'];;
         var data = {},
           aName = '';
         for (var i = 0; i < values.length; i++) {
@@ -456,6 +458,9 @@ Xrm.Portal = {
             if (values[i].value != null && values[i].value != "") {
               data[aName] = moment(values[i].value, allowFormats).toDate().toString('dd/MM/yyyy');
             }
+          } else if ($(values[i]).prop('className').indexOf('picklist') > -1) {
+            data[aName + "_text"] = $(values[i]).find('option:selected').text();
+            data[aName] = $(values[i]).find('option:selected').val();
           } else {
             data[aName] = values[i].value;
           }
@@ -467,6 +472,7 @@ Xrm.Portal = {
       };
       this.setVisible = function(isVisible, isMandatory) {
         var g = this.c.parent().parent();
+        //this.setRequired(isMandatory);
         isVisible ? g.show() : g.hide();
         return this;
       };
@@ -566,6 +572,9 @@ Xrm.Portal = {
       this.cE = this.s.getLookupEntity(this.id);
       this.vg = "";
 
+      this.enableOneClick = function() {
+        this.cN.on('click', () => this.cL.siblings('div.input-group-btn').children('button.launchentitylookup').click());
+      };
       this.getValue = function() {
         return {
           "id": this.cL.val(),
@@ -738,7 +747,7 @@ Xrm.Portal = {
       };
       this.setRequired = function(isRequired, customFunction, customMessage) {
         var g = c.parent().siblings(".info");
-        isRequired || customFFunction != undefined ?
+        isRequired || customFunction != undefined ?
           Xrm.Portal.Utility.Validation.setValidation(g, this, isRequired, this.vg, customFunction, customMessage) :
           Xrm.Portal.Utility.Validation.removeValidation(g, this);
         return this;
@@ -756,7 +765,6 @@ Xrm.Portal = {
         return this;
       };
     },
-    
     Canvas: function (id) {
         var canvas, context, tool;
   
