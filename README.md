@@ -24,6 +24,11 @@ Xrm.Portal.Form.get(fieldName).setDisable(bool);
 Xrm.Portal.Form.get(fieldName).setRequired(bool); //Default - a default validation and a default message
 Xrm.Portal.Form.get(fieldName).setRequired(bool, function, message); //A custom validation and a custom message
 ```
+## Attach/Remove OnChange event of a field
+```
+Xrm.Portal.Form.get(fieldName).attachOnChange(callback);
+Xrm.Portal.Form.get(fieldName).removeOnChange();
+```
 ## Configure DateTimePicker options
 ```
 Xrm.Portal.Form.get(dateTimeFieldName).getData().options({options});
@@ -39,18 +44,14 @@ Xrm.Portal.Form.get(subGridName).getRowCountFromCurrentPage();
 ```
 Xrm.Portal.Form.get(lookupName).enableOneClick();
 ```
-## Get JSON data from a quick view
+## Quick View
+### Get JSON data from a quick view
 ```
 Xrm.Portal.Form.get(quickViewName).getValue();
 ```
-## Transform a quick view into AdaptiveCard
+### Render as an AdaptiveCard
 ```
 Xrm.Portal.Form.get(quickViewName).renderAdaptiveCard(lookupName, adaptiveCardJSON, dataInJSON);
-```
-## Attach/Remove OnChange event of a field
-```
-Xrm.Portal.Form.get(fieldName).attachOnChange(callback);
-Xrm.Portal.Form.get(fieldName).removeOnChange();
 ```
 ## Method chaining
 ```
