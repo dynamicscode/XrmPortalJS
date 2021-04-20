@@ -81,40 +81,41 @@ Xrm.Portal = {
         var vid = l + this.postFix;
         var g = groupObj;
         var c = Xrm.Portal.Utility.Selector.getByControlId(id);
+        if (c.length > 0) {
+          isRequired && $(g).attr("class", "info required");
+          if (Xrm.Portal.Utility.hasPage_Validators()) {
+            Page_Validators = $.grep(Page_Validators,
+              function(e) {
+                return $(e).prop('controltovalidate') != "" && $(e).prop('id') != vid;
+              }
+            );
 
-        isRequired && $(g).attr("class", "info required");
-        if (Xrm.Portal.Utility.hasPage_Validators()) {
-          Page_Validators = $.grep(Page_Validators,
-            function(e) {
-              return $(e).prop('controltovalidate') != "" && $(e).prop('id') != vid;
-            }
-          );
+            validationGroup = (validationGroup == null || validationGroup == "") && Page_Validators.length > 0 ? Page_Validators[0].validationGroup : validationGroup;
 
-          validationGroup = (validationGroup == null || validationGroup == "") && Page_Validators.length > 0 ? Page_Validators[0].validationGroup : validationGroup;
+            var vF = validationFunction == null && isRequired ? function() {
+              return Xrm.Portal.Utility.Validation.required(control)
+            } : validationFunction;
 
-          var vF = validationFunction == null && isRequired ? function() {
-            return Xrm.Portal.Utility.Validation.required(control)
-          } : validationFunction;
+            //retrive lable if there is no custom message
+            var m = customMessage == null ? $(g).children("label").html() + " is a required field." : customMessage;
+            // Create new validator
+            var nv = document.createElement('span');
+            nv.style.display = "none";
+            nv.id = vid;
+            nv.controltovalidate = id;
+            nv.errormessage = "<a href='#" + l + "'>" + m + "</a>";
+            nv.validationGroup = validationGroup;
+            nv.initialvalue = "";
+            nv.evaluationfunction = vF;
 
-          //retrive lable if there is no custom message
-          var m = customMessage == null ? $(g).children("label").html() + " is a required field." : customMessage;
-          // Create new validator
-          var nv = document.createElement('span');
-          nv.style.display = "none";
-          nv.id = vid;
-          nv.controltovalidate = id;
-          nv.errormessage = "<a href='#" + l + "'>" + m + "</a>";
-          nv.validationGroup = validationGroup;
-          nv.initialvalue = "";
-          nv.evaluationfunction = vF;
+            // Add the new validator to the page validators array:
+            Page_Validators.push(nv);
 
-          // Add the new validator to the page validators array:
-          Page_Validators.push(nv);
-
-          // Wire-up the click event handler of the validation summary link
-          $("a[href='#" + l + "']").on("click", function() {
-            scrollToAndFocus("'" + l + "'", "'" + id + "'");
-          });
+            // Wire-up the click event handler of the validation summary link
+            $("a[href='#" + l + "']").on("click", function() {
+              scrollToAndFocus("'" + l + "'", "'" + id + "'");
+            });
+          }
         }
       },
     },
@@ -145,9 +146,10 @@ Xrm.Portal = {
       attachOnLoad: function(control, callback) {
         control.on('load', callback);
       },
-      attachOnChange: function(control, callback) {
+      attachOnChange: function(control, callback, triggerOnLoad) {
         control.change(callback);
-        control.trigger('change');
+        if (triggerOnLoad != false)
+          control.trigger('change');
       },
       attachDateTimePickerOnChange: function(control, callback) {
         control.next().datetimepicker().on('dp.change', callback);
@@ -195,6 +197,14 @@ Xrm.Portal = {
     controlType: {
       Tab: 1,
       Section: 2
+    }
+  },
+  WebForm: {
+    isExisted: function() {
+      return $('#WebFormPanel').children('.form-readonly').length > 0;
+    },
+    isReadOnly: function() {
+      return Xrm.Portal.WebForm.isExisted() && $('#WebFormPanel').children('.form-readonly').length > 0;
     }
   },
   Form: {
@@ -274,6 +284,9 @@ Xrm.Portal = {
         case this.controlType.QuickView:
           v = new Xrm.Portal.Control.QuickView(c);
           break;
+        case this.controlType.Notes:
+          v = new Xrm.Portal.Control.Notes(c);
+          break;
         default:
           v = new Xrm.Portal.Control.Generic(c);
           break;
@@ -299,12 +312,14 @@ Xrm.Portal = {
           return this.controlType.Checkbox;
         } else if (c.attr("type") == "hidden") {
           return this.controlType.Lookup;
-        } else if (c.attr("class") != null && (c.attr("class").indexOf("boolean-radio") >= 0 || c.attr("class").indexOf("picklist horizontal") >=0 || c.attr("class").indexOf("picklist vertical") >= 0)) {
+        } else if (c.attr("class") != null && (c.attr("class").indexOf("boolean-radio") >= 0 || c.attr("class").indexOf("picklist horizontal") >= 0 || c.attr("class").indexOf("picklist vertical") >= 0)) {
           return this.controlType.Radio;
         } else if (c.prop('className') == 'subgrid') {
           return this.controlType.Subgrid;
         } else if (c.is('iframe')) {
           return this.controlType.QuickView;
+        } else if (c.children('.entity-notes').length > 0) {
+          return this.controlType.Notes;
         } else {
           return this.controlType.Control;
         }
@@ -319,7 +334,8 @@ Xrm.Portal = {
       Tab: 100,
       Section: 101,
       Subgrid: 1000,
-      QuickView: 2000
+      QuickView: 2000,
+      Notes: 3000
     }
   },
   Control: {
@@ -381,6 +397,60 @@ Xrm.Portal = {
         c.children().each(function() {
           Xrm.Portal.Form.get(this.id).setRequired(isRequired, customFunction, customMessage);
         });
+      };
+    },
+    Notes: function(c) {
+      this.s = Xrm.Portal.Utility.Selector;
+      this.id = $(c).prop("id");
+
+      this.cc = document.getElementById(this.id + '_cc');
+      this.c = c;
+      this.vg = "";
+
+      this.getValue = function() {
+        throw 'not implemented';
+      };
+      this.setValue = function(value) {
+        throw 'not implemented';
+      };
+      this.getNumberofAttachments = function() {
+        return this.c.find('.notes').children().length;
+      };
+      this.hasAttachments = function() {
+        return this.c.find('.notes-empty').css('display') != 'block';
+      };
+      this.getCurrentPage = function() {
+        throw 'not implemented';
+      };
+      this.setVisible = function(isVisible, isMandatory) {
+        var g = this.c.parent().parent();
+        //this.setRequired(isMandatory);
+        isVisible ? g.show() : g.hide();
+        return this;
+      };
+      this.setCreateVisible = function(isVisible) {
+        //this.c.find('a[title=Create]').css('display', isVisible ? '' : 'none');
+      };
+      this.setDisable = function(isDisabled) {
+        //throw "not implemented";
+      };
+      this.setRequired = function(isRequired, customFunction, customMessage) {
+        // var g = c.parent().siblings(".info");
+        // isRequired || customFunction != undefined ?
+        //   Xrm.Portal.Utility.Validation.setValidation(g, this, isRequired, this.vg, customFunction, customMessage) :
+        //   Xrm.Portal.Utility.Validation.removeValidation(g, this);
+        // return this;
+        throw 'not implemented';
+      };
+      this.attachOnChange = function(callback) {
+        throw 'not implemented';
+      };
+      this.removeOnChange = function() {
+        throw "not implemented";
+      };
+      this.setValidationGroup = function(g) {
+        this.vg = g;
+        return this;
       };
     },
     Subgrid: function(c) {
@@ -542,8 +612,8 @@ Xrm.Portal = {
           Xrm.Portal.Utility.Validation.removeValidation(g, this);
         return this;
       };
-      this.attachOnChange = function(callback) {
-        Xrm.Portal.Utility.Event.attachOnChange(this.c, callback);
+      this.attachOnChange = function(callback, triggerOnLoad) {
+        Xrm.Portal.Utility.Event.attachOnChange(this.c, callback, triggerOnLoad);
         return this;
       };
       this.removeOnChange = function() {
@@ -554,7 +624,7 @@ Xrm.Portal = {
         this.vg = g;
         return this;
       };
-      this.transformToCanvas = function () {
+      this.transformToCanvas = function() {
         this.c.hide();
         if (this.c.parent().children().last()[0].tagName !== "CANVAS") {
           var canvasId = this.id + "Canvas";
@@ -765,94 +835,94 @@ Xrm.Portal = {
         return this;
       };
     },
-    Canvas: function (id) {
-        var canvas, context, tool;
-  
-        function init(id) {
-          // Find the canvas element.
-          canvas = document.getElementById(id + "Canvas");
-          if (!canvas) {
-            alert('Error: I cannot find the canvas element!');
-            return;
-          }
-  
-          if (!canvas.getContext) {
-            alert('Error: no canvas.getContext!');
-            return;
-          }
-  
-          // Get the 2D canvas context.
-          context = canvas.getContext('2d');
-          if (!context) {
-            alert('Error: failed to getContext!');
-            return;
-          }
-  
-          // Pencil tool instance.
-          tool = new tool_pencil(id, canvas.id);
-  
-          // Attach the mousedown, mousemove and mouseup event listeners.
-          canvas.addEventListener('mousedown', ev_canvas, false);
-          canvas.addEventListener('mousemove', ev_canvas, false);
-          canvas.addEventListener('mouseup', ev_canvas, false);
+    Canvas: function(id) {
+      var canvas, context, tool;
+
+      function init(id) {
+        // Find the canvas element.
+        canvas = document.getElementById(id + "Canvas");
+        if (!canvas) {
+          alert('Error: I cannot find the canvas element!');
+          return;
         }
-  
-        // This painting tool works like a drawing pencil which tracks the mouse 
-        // movements.
-        function tool_pencil(id, canvasId) {
-          var id = id;
-          var canvasId = canvasId;
-          var tool = this;
-          this.started = false;
-  
-          // This is called when you start holding down the mouse button.
-          // This starts the pencil drawing.
-          this.mousedown = function (ev) {
-            context.beginPath();
-            context.moveTo(ev._x, ev._y);
-            tool.started = true;
-          };
-  
-          // This function is called every time you move the mouse. Obviously, it only 
-          // draws if the tool.started state is set to true (when you are holding down 
-          // the mouse button).
-          this.mousemove = function (ev) {
-            if (tool.started) {
-              context.lineTo(ev._x, ev._y);
-              context.stroke();
-            }
-          };
-  
-          // This is called when you release the mouse button.
-          this.mouseup = function (ev) {
-            if (tool.started) {
-              tool.mousemove(ev);
-              tool.started = false;
-            }
-            Xrm.Portal.Form.get(id).setValue(document.getElementById(canvasId).toDataURL());
-          };
+
+        if (!canvas.getContext) {
+          alert('Error: no canvas.getContext!');
+          return;
         }
-  
-        // The general-purpose event handler. This function just determines the mouse 
-        // position relative to the canvas element.
-        function ev_canvas(ev) {
-          if (ev.layerX || ev.layerX == 0) { // Firefox
-            ev._x = ev.layerX;
-            ev._y = ev.layerY;
-          } else if (ev.offsetX || ev.offsetX == 0) { // Opera
-            ev._x = ev.offsetX;
-            ev._y = ev.offsetY;
-          }
-  
-          // Call the event handler of the tool.
-          var func = tool[ev.type];
-          if (func) {
-            func(ev);
-          }
+
+        // Get the 2D canvas context.
+        context = canvas.getContext('2d');
+        if (!context) {
+          alert('Error: failed to getContext!');
+          return;
         }
-  
-        init(id);
+
+        // Pencil tool instance.
+        tool = new tool_pencil(id, canvas.id);
+
+        // Attach the mousedown, mousemove and mouseup event listeners.
+        canvas.addEventListener('mousedown', ev_canvas, false);
+        canvas.addEventListener('mousemove', ev_canvas, false);
+        canvas.addEventListener('mouseup', ev_canvas, false);
       }
+
+      // This painting tool works like a drawing pencil which tracks the mouse 
+      // movements.
+      function tool_pencil(id, canvasId) {
+        var id = id;
+        var canvasId = canvasId;
+        var tool = this;
+        this.started = false;
+
+        // This is called when you start holding down the mouse button.
+        // This starts the pencil drawing.
+        this.mousedown = function(ev) {
+          context.beginPath();
+          context.moveTo(ev._x, ev._y);
+          tool.started = true;
+        };
+
+        // This function is called every time you move the mouse. Obviously, it only 
+        // draws if the tool.started state is set to true (when you are holding down 
+        // the mouse button).
+        this.mousemove = function(ev) {
+          if (tool.started) {
+            context.lineTo(ev._x, ev._y);
+            context.stroke();
+          }
+        };
+
+        // This is called when you release the mouse button.
+        this.mouseup = function(ev) {
+          if (tool.started) {
+            tool.mousemove(ev);
+            tool.started = false;
+          }
+          Xrm.Portal.Form.get(id).setValue(document.getElementById(canvasId).toDataURL());
+        };
+      }
+
+      // The general-purpose event handler. This function just determines the mouse 
+      // position relative to the canvas element.
+      function ev_canvas(ev) {
+        if (ev.layerX || ev.layerX == 0) { // Firefox
+          ev._x = ev.layerX;
+          ev._y = ev.layerY;
+        } else if (ev.offsetX || ev.offsetX == 0) { // Opera
+          ev._x = ev.offsetX;
+          ev._y = ev.offsetY;
+        }
+
+        // Call the event handler of the tool.
+        var func = tool[ev.type];
+        if (func) {
+          func(ev);
+        }
+      }
+
+      init(id);
+    }
   },
   EventType: {
     OnChange: 1,
