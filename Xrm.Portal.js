@@ -31,7 +31,8 @@ var PortalWebAPI = {
   Verb: {
     POST: 'POST',
     PATCH: 'PATCH',
-    DELETE: 'DELETE'
+    DELETE: 'DELETE',
+    GET: 'GET'
   }
 }
 
@@ -39,30 +40,51 @@ var Xrm = Xrm || {};
 
 Xrm.Portal = {
   WebAPI: {
-    createRecord: function (datasetName, data, successCallback) {
+    createRecord: function (datasetName, data, successCallback, errorCallback) {
       webapi.safeAjax({
         type: PortalWebAPI.Verb.POST,
         url: `${PortalWebAPI.Url}${datasetName}`,
         contentType: "application/json",
         data: JSON.stringify(data),
-        success: function(r, s, x) { successCallback(x); }
+        success: function(r, s, x) { successCallback(x); },
+        error: function (xhr, status, error) { if(errorCallback) { errorCallback(xhr); }; }
       });
     },
-    updateRecord: function (datasetName, id, data, successCallback) {
+    updateRecord: function (datasetName, id, data, successCallback, errorCallback) {
       webapi.safeAjax({
         type: PortalWebAPI.Verb.PATCH,
         url: `${PortalWebAPI.Url}${datasetName}(${id})`,
         contentType: "application/json",
         data: JSON.stringify(data),
-        success: function(r) { successCallback(r); }
+        success: function(r) { successCallback(r); },
+        error: function (xhr, status, error) { if(errorCallback) { errorCallback(xhr); }; }
       });
     },
-    deleteRecord: function (datasetName, id, successCallback) {
+    deleteRecord: function (datasetName, id, successCallback, errorCallback) {
       webapi.safeAjax({
         type: PortalWebAPI.Verb.DELETE,
         url: `${PortalWebAPI.Url}${datasetName}(${id})`,
         contentType: "application/json",
-        success: function(r) { successCallback(r); }
+        success: function(r) { successCallback(r); },
+        error: function (xhr, status, error) { if(errorCallback) { errorCallback(xhr); }; }
+      })
+    },
+    retrieveMultipleRecords: function (datasetName, options, successCallback, errorCallback) {
+      webapi.safeAjax({
+        type: PortalWebAPI.Verb.GET,
+        url: `${PortalWebAPI.Url}${datasetName}${options}`,
+        contentType: "application/json",
+        success: function(r) { successCallback(r); },
+        error: function (xhr, status, error) { if(errorCallback) { errorCallback(xhr); }; }
+      })
+    },
+    retrieveRecord: function (datasetName, id, options, successCallback, errorCallback) {
+      webapi.safeAjax({
+        type: PortalWebAPI.Verb.GET,
+        url: `${PortalWebAPI.Url}${datasetName}(${id})${options}`,
+        contentType: "application/json",
+        success: function(r) { successCallback(r); },
+        error: function (xhr, status, error) { if(errorCallback) { errorCallback(xhr); }; }
       })
     }
   },
