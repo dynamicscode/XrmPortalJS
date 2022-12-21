@@ -92,3 +92,13 @@ The method transforms a text field into a canvas, allowing users to draw lines o
 ```
 Xrm.Portal.Form.get(fieldName).transformToCanvas();
 ```
+
+## List
+### Set List Visibility
+```
+Xrm.Portal.List.get().setVisible(false);
+```
+### Set Entire List Row Clickable
+```
+Xrm.Portal.List.get().setLinkAllRow();
+```

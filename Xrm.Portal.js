@@ -11,10 +11,10 @@ Xrm.Portal = {
     Auth: {
       /*authorize: function() {
       },*/
-      decode: function(token) {
+      decode: function (token) {
         if (token !== "") {
           var base64Url = token.split('.')[1];
-          var base64 = decodeURIComponent(atob(base64Url).split('').map(function(c) {
+          var base64 = decodeURIComponent(atob(base64Url).split('').map(function (c) {
             return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
           }).join(''));
 
@@ -22,39 +22,42 @@ Xrm.Portal = {
         }
         throw "No login user is detected.";
       },
-      get: function() {
+      get: function () {
         return $.get("/_services/auth/token");
       }
     },
-    hasPage_Validators: function() {
-      return typeof(Page_Validators) !== typeof(undefined);
+    hasPage_Validators: function () {
+      return typeof (Page_Validators) !== typeof (undefined);
     },
     Selector: {
-      appendSelector: function(id) {
+      appendSelector: function (id) {
         return "#" + id;
       },
-      appendLabel: function(id) {
+      appendLabel: function (id) {
         return id + "_label";
       },
-      getByControlId: function(id) {
+      getByControlId: function (id) {
         return $(this.appendSelector(id));
       },
-      getTextLabel: function(id) {
+      getByListIndex: function (index) {
+        return $(".entitylist.entity-grid").eq(index);
+      },
+      getTextLabel: function (id) {
         return $(this.appendSelector(id) + "_label");
       },
-      getLookupName: function(id) {
+      getLookupName: function (id) {
         return $(this.appendSelector(id) + "_name");
       },
-      getLookupEntity: function(id) {
+      getLookupEntity: function (id) {
         return $(this.appendSelector(id) + "_entityname");
       },
-      getByDataName: function(id) {
+      getByDataName: function (id) {
         return $("[data-name=" + id + "]");
       }
     },
     Validation: {
       postFix: "_Xrm_Client_Validation",
-      required: function(control) {
+      required: function (control) {
         console.log("Validation.required -> id: " + control);
         var value = control.getValue();
         if (value == null || value == "" || (value.hasOwnProperty("id") && (value.id == "" || value.id == null))) {
@@ -63,19 +66,19 @@ Xrm.Portal = {
           return true;
         }
       },
-      removeValidation: function(groupObj, control) {
+      removeValidation: function (groupObj, control) {
         $(groupObj).attr("class", "info");
         var l = Xrm.Portal.Utility.Selector.appendLabel(control.id);
         var vid = l + this.postFix;
         if (Xrm.Portal.Utility.hasPage_Validators()) {
           Page_Validators = $.grep(Page_Validators,
-            function(e) {
+            function (e) {
               return $(e).prop('controltovalidate') != "" && $(e).prop('id') != vid;
             }
           );
         }
       },
-      setValidation: function(groupObj, control, isRequired, validationGroup, validationFunction, customMessage) {
+      setValidation: function (groupObj, control, isRequired, validationGroup, validationFunction, customMessage) {
         var id = control.id;
         var l = Xrm.Portal.Utility.Selector.appendLabel(id);
         var vid = l + this.postFix;
@@ -85,14 +88,14 @@ Xrm.Portal = {
           isRequired && $(g).attr("class", "info required");
           if (Xrm.Portal.Utility.hasPage_Validators()) {
             Page_Validators = $.grep(Page_Validators,
-              function(e) {
+              function (e) {
                 return $(e).prop('controltovalidate') != "" && $(e).prop('id') != vid;
               }
             );
 
             validationGroup = (validationGroup == null || validationGroup == "") && Page_Validators.length > 0 ? Page_Validators[0].validationGroup : validationGroup;
 
-            var vF = validationFunction == null && isRequired ? function() {
+            var vF = validationFunction == null && isRequired ? function () {
               return Xrm.Portal.Utility.Validation.required(control)
             } : validationFunction;
 
@@ -112,7 +115,7 @@ Xrm.Portal = {
             Page_Validators.push(nv);
 
             // Wire-up the click event handler of the validation summary link
-            $("a[href='#" + l + "']").on("click", function() {
+            $("a[href='#" + l + "']").on("click", function () {
               scrollToAndFocus("'" + l + "'", "'" + id + "'");
             });
           }
@@ -120,7 +123,7 @@ Xrm.Portal = {
       },
     },
     Event: {
-      wireUp: function(events) {
+      wireUp: function (events) {
         console.log("Event.wireUp -> events: " + events);
         for (var i in events) {
           var e = events[i];
@@ -140,26 +143,26 @@ Xrm.Portal = {
           }
         }
       },
-      attachOnLoaded: function(control, callback) {
+      attachOnLoaded: function (control, callback) {
         control.on('loaded', callback);
       },
-      attachOnLoad: function(control, callback) {
+      attachOnLoad: function (control, callback) {
         control.on('load', callback);
       },
-      attachOnChange: function(control, callback, triggerOnLoad) {
+      attachOnChange: function (control, callback, triggerOnLoad) {
         control.change(callback);
         if (triggerOnLoad != false)
           control.trigger('change');
       },
-      attachDateTimePickerOnChange: function(control, callback) {
+      attachDateTimePickerOnChange: function (control, callback) {
         control.next().datetimepicker().on('dp.change', callback);
       },
-      removeOnChange: function(control) {
+      removeOnChange: function (control) {
         control.off('change');
       }
     },
     AdaptiveCard: {
-      parseTemplate: function(card, data) {
+      parseTemplate: function (card, data) {
         var str = JSON.stringify(card);
         var matches = str.match(/(\\)?"\$\{.+?\}(\\)?"/gm)
         if (matches != null) {
@@ -180,11 +183,11 @@ Xrm.Portal = {
     }
   },
   Ui: {
-    get: function(id) {
+    get: function (id) {
       var c = Xrm.Portal.Utility.Selector.getByDataName(id);
       var ct = this.getControlType(c);
     },
-    getControlType: function(c) {
+    getControlType: function (c) {
       console.log("getControlType -> c: " + c);
       if (c.length > 0) {
         if (c.attr("class").startsWith("tab")) {
@@ -200,41 +203,41 @@ Xrm.Portal = {
     }
   },
   WebForm: {
-    isExisted: function() {
+    isExisted: function () {
       return $('#WebFormPanel').children('.form-readonly').length > 0;
     },
-    isReadOnly: function() {
+    isReadOnly: function () {
       return Xrm.Portal.WebForm.isExisted() && $('#WebFormPanel').children('.form-readonly').length > 0;
     }
   },
   Form: {
     Validation: {
-      assertRegex: function(cid, exp, message, isRequired) {
-        Xrm.Portal.Form.get(cid).setRequired(isRequired, function() {
+      assertRegex: function (cid, exp, message, isRequired) {
+        Xrm.Portal.Form.get(cid).setRequired(isRequired, function () {
           if (!isRequired && Xrm.Portal.Form.get(cid).getValue() == "") return true;
           else return exp.test(Xrm.Portal.Form.get(cid).getValue());
         }, message);
       },
-      denyPastDate: function(cid, message, isRequired) {
-        Xrm.Portal.Form.get(cid).setRequired(isRequired, function() {
+      denyPastDate: function (cid, message, isRequired) {
+        Xrm.Portal.Form.get(cid).setRequired(isRequired, function () {
           if (!isRequired && Xrm.Portal.Form.get(cid).getValue() == "") return true;
           else return new Date() <= new Date(Xrm.Portal.Form.get(cid).getValue());
         }, message);
       },
-      denyFutureDate: function(cid, message, isRequired) {
-        Xrm.Portal.Form.get(cid).setRequired(isRequired, function() {
+      denyFutureDate: function (cid, message, isRequired) {
+        Xrm.Portal.Form.get(cid).setRequired(isRequired, function () {
           if (!isRequired && Xrm.Portal.Form.get(cid).getValue() == "") return true;
           else return new Date() >= new Date(Xrm.Portal.Form.get(cid).getValue());
         }, message);
       },
-      compareDates: function(mainid, subid, message, isRequired) {
-        Xrm.Portal.Form.get(mainid).setRequired(isRequired, function() {
+      compareDates: function (mainid, subid, message, isRequired) {
+        Xrm.Portal.Form.get(mainid).setRequired(isRequired, function () {
           if (!isRequired && Xrm.Portal.Form.get(mainid).getValue() == "") return true;
           else return new Date(Xrm.Portal.Form.get(mainid).getValue()) > new Date(Xrm.Portal.Form.get(subid).getValue())
         }, message);
       },
-      setNumberRange: function(cid, min, max, message, isRequired) {
-        Xrm.Portal.Form.get(cid).setRequired(isRequired, function() {
+      setNumberRange: function (cid, min, max, message, isRequired) {
+        Xrm.Portal.Form.get(cid).setRequired(isRequired, function () {
           var isMin = true,
             isMax = true;
           if (min != undefined) {
@@ -248,7 +251,7 @@ Xrm.Portal = {
         }, message);
       }
     },
-    get: function(id) {
+    get: function (id) {
       var c = Xrm.Portal.Utility.Selector.getByControlId(id);
       var ct, v;
 
@@ -293,7 +296,7 @@ Xrm.Portal = {
       }
       return v;
     },
-    getUiControlType: function(c) {
+    getUiControlType: function (c) {
       console.log("getUiControlType: -> c: " + c);
       if (c.length > 0) {
         if (c.attr("class").startsWith("tab")) {
@@ -303,7 +306,7 @@ Xrm.Portal = {
         }
       }
     },
-    getControlType: function(c) {
+    getControlType: function (c) {
       console.log("getControlType -> c: " + c);
       if (c.length > 0) {
         if (c.attr("data-ui") == "datetimepicker") {
@@ -338,20 +341,33 @@ Xrm.Portal = {
       Notes: 3000
     }
   },
+  List: {
+    /**
+     * Gets a List object
+     * @param {number} index List index (0 default)
+     * @returns List object
+     */
+    get: function (index = 0) {
+      var c = Xrm.Portal.Utility.Selector.getByListIndex(index);
+      if (!!c) {
+        return new Xrm.Portal.Control.List(c);
+      }
+    }
+  },
   Control: {
-    Tab: function(c) {
+    Tab: function (c) {
       this.s = Xrm.Portal.Utility.Selector;
       this.id = $(c).prop("id");
 
       this.c = c;
 
-      this.getValue = function() {
+      this.getValue = function () {
         throw "not implemented";
       };
-      this.setValue = function(value) {
+      this.setValue = function (value) {
         throw "not implemented";
       };
-      this.setVisible = function(isVisible, isMandatory) {
+      this.setVisible = function (isVisible, isMandatory) {
         var h = this.c.prev();
         //this.setRequired(isVisible && isMandatory);
         if (isVisible) {
@@ -362,44 +378,44 @@ Xrm.Portal = {
           if (h.is('h2')) h.hide();
         }
       };
-      this.setDisable = function(isDisabled) {
+      this.setDisable = function (isDisabled) {
         throw "not implemented";
       };
-      this.setRequired = function(isRequired, customFunction, customMessage) {
+      this.setRequired = function (isRequired, customFunction, customMessage) {
         throw "not implemented";
-        c.children().each(function() {
+        c.children().each(function () {
           Xrm.Portal.Form.get(this.id).setRequired(isRequired, customFunction, customMessage);
         });
       };
     },
-    Section: function(c) {
+    Section: function (c) {
       this.s = Xrm.Portal.Utility.Selector;
       this.id = $(c).prop("id");
 
       this.c = c;
 
-      this.getValue = function() {
+      this.getValue = function () {
         throw "not implemented";
       };
-      this.setValue = function(value) {
+      this.setValue = function (value) {
         throw "not implemented";
       };
-      this.setVisible = function(isVisible, isMandatory) {
+      this.setVisible = function (isVisible, isMandatory) {
         var g = this.c;
         //this.setRequired(isVisible && isMandatory);
         isVisible ? g.parent().show() : g.parent().hide();
       };
-      this.setDisable = function(isDisabled) {
+      this.setDisable = function (isDisabled) {
         throw "not implemented";
       };
-      this.setRequired = function(isRequired, customFunction, customMessage) {
+      this.setRequired = function (isRequired, customFunction, customMessage) {
         throw "not implemented";
-        c.children().each(function() {
+        c.children().each(function () {
           Xrm.Portal.Form.get(this.id).setRequired(isRequired, customFunction, customMessage);
         });
       };
     },
-    Notes: function(c) {
+    Notes: function (c) {
       this.s = Xrm.Portal.Utility.Selector;
       this.id = $(c).prop("id");
 
@@ -407,34 +423,34 @@ Xrm.Portal = {
       this.c = c;
       this.vg = "";
 
-      this.getValue = function() {
+      this.getValue = function () {
         throw 'not implemented';
       };
-      this.setValue = function(value) {
+      this.setValue = function (value) {
         throw 'not implemented';
       };
-      this.getNumberofAttachments = function() {
+      this.getNumberofAttachments = function () {
         return this.c.find('.notes').children().length;
       };
-      this.hasAttachments = function() {
+      this.hasAttachments = function () {
         return this.c.find('.notes-empty').css('display') != 'block';
       };
-      this.getCurrentPage = function() {
+      this.getCurrentPage = function () {
         throw 'not implemented';
       };
-      this.setVisible = function(isVisible, isMandatory) {
+      this.setVisible = function (isVisible, isMandatory) {
         var g = this.c.parent().parent();
         //this.setRequired(isMandatory);
         isVisible ? g.show() : g.hide();
         return this;
       };
-      this.setCreateVisible = function(isVisible) {
+      this.setCreateVisible = function (isVisible) {
         //this.c.find('a[title=Create]').css('display', isVisible ? '' : 'none');
       };
-      this.setDisable = function(isDisabled) {
+      this.setDisable = function (isDisabled) {
         //throw "not implemented";
       };
-      this.setRequired = function(isRequired, customFunction, customMessage) {
+      this.setRequired = function (isRequired, customFunction, customMessage) {
         // var g = c.parent().siblings(".info");
         // isRequired || customFunction != undefined ?
         //   Xrm.Portal.Utility.Validation.setValidation(g, this, isRequired, this.vg, customFunction, customMessage) :
@@ -442,18 +458,18 @@ Xrm.Portal = {
         // return this;
         throw 'not implemented';
       };
-      this.attachOnChange = function(callback) {
+      this.attachOnChange = function (callback) {
         throw 'not implemented';
       };
-      this.removeOnChange = function() {
+      this.removeOnChange = function () {
         throw "not implemented";
       };
-      this.setValidationGroup = function(g) {
+      this.setValidationGroup = function (g) {
         this.vg = g;
         return this;
       };
     },
-    Subgrid: function(c) {
+    Subgrid: function (c) {
       this.s = Xrm.Portal.Utility.Selector;
       this.id = $(c).prop("id");
 
@@ -461,50 +477,92 @@ Xrm.Portal = {
       this.c = c;
       this.vg = "";
 
-      this.getValue = function() {
+      this.getValue = function () {
         throw "not implemented";
       };
-      this.setValue = function(value) {
+      this.setValue = function (value) {
         throw "not implemented";
       };
-      this.getRowCountFromCurrentPage = function() {
+      this.getRowCountFromCurrentPage = function () {
         return this.c.find('div > div.view-grid > table > tbody > tr').length;
       };
-      this.getCurrentPage = function() {
+      this.getCurrentPage = function () {
         throw 'not implemented';
       };
-      this.setVisible = function(isVisible, isMandatory) {
+      this.setVisible = function (isVisible, isMandatory) {
         var g = this.c.parent().parent();
         this.setRequired(isMandatory);
         isVisible ? g.show() : g.hide();
         return this;
       };
-      this.setCreateVisible = function(isVisible) {
+      this.setCreateVisible = function (isVisible) {
         this.c.find('a[title=Create]').css('display', isVisible ? '' : 'none');
       };
-      this.setDisable = function(isDisabled) {
+      this.setDisable = function (isDisabled) {
         throw "not implemented";
       };
-      this.setRequired = function(isRequired, customFunction, customMessage) {
+      this.setRequired = function (isRequired, customFunction, customMessage) {
         var g = c.parent().siblings(".info");
         isRequired || customFunction != undefined ?
           Xrm.Portal.Utility.Validation.setValidation(g, this, isRequired, this.vg, customFunction, customMessage) :
           Xrm.Portal.Utility.Validation.removeValidation(g, this);
         return this;
       };
-      this.attachOnChange = function(callback) {
+      this.attachOnChange = function (callback) {
         Xrm.Portal.Utility.Event.attachOnLoaded(this.c, callback);
         return this;
       };
-      this.removeOnChange = function() {
+      this.removeOnChange = function () {
         throw "not implemented";
       };
-      this.setValidationGroup = function(g) {
+      this.setValidationGroup = function (g) {
         this.vg = g;
         return this;
       };
     },
-    QuickView: function(c) {
+    List: function (c) {
+      this.s = Xrm.Portal.Utility.Selector;
+      this.c = c;
+
+      this.getRowCountFromCurrentPage = function () {
+        return this.c.find('div > div.view-grid > table > tbody > tr').length;
+      };
+      this.setVisible = function (isVisible) {
+        var g = this.c.parent().parent();
+        isVisible ? g.show() : g.hide();
+        return this;
+      };
+      this.setCreateVisible = function (isVisible) {
+        this.c.find('a[title=Create]').css('display', isVisible ? '' : 'none');
+      };
+      /**
+       * Attaches a function to the Load event of the List
+       * @param {function} callback Callback function
+       */
+      this.attachOnLoaded = function (callback) {
+        Xrm.Portal.Utility.Event.attachOnLoaded(this.c, callback);
+        return this;
+      };
+      /**
+       * Sets the entire List row clickable
+       */
+      this.setLinkAllRow = function () {
+        this.attachOnLoaded(function () {
+          $(this).find("table tbody > tr").each(function (index, tr) {
+            var primaryColumn = $(tr).find('td')[0];
+            var url = $(primaryColumn).find("a")[0].href;
+            if (!!url) {
+              $(tr).css("cursor", "pointer")
+              $(tr).find('td[aria-label="action menu"]').remove();
+              $(tr).click(function () {
+                window.location.href = url;
+              });
+            }
+          });
+        });
+      };
+    },
+    QuickView: function (c) {
       this.s = Xrm.Portal.Utility.Selector;
       this.id = $(c).prop("id");
 
@@ -512,7 +570,7 @@ Xrm.Portal = {
       this.c = c;
       this.vg = "";
 
-      this.getValue = function() {
+      this.getValue = function () {
         var values = this.c.contents().find('.form-control');
         var allowFormats = ['DD/MM/YYYY', 'YYYY/MM/DD'];;
         var data = {},
@@ -537,32 +595,32 @@ Xrm.Portal = {
         }
         return data;
       };
-      this.setValue = function(value) {
+      this.setValue = function (value) {
         throw "not implemented";
       };
-      this.setVisible = function(isVisible, isMandatory) {
+      this.setVisible = function (isVisible, isMandatory) {
         var g = this.c.parent().parent();
         //this.setRequired(isMandatory);
         isVisible ? g.show() : g.hide();
         return this;
       };
-      this.setDisable = function(isDisabled) {
+      this.setDisable = function (isDisabled) {
         throw 'not implemented';
       };
-      this.setRequired = function(isRequired, customFunction, customMessage) {
+      this.setRequired = function (isRequired, customFunction, customMessage) {
         throw 'not implemented'
       };
-      this.attachOnChange = function(callback) {
+      this.attachOnChange = function (callback) {
         Xrm.Portal.Utility.Event.attachOnLoad(this.c, callback);
         return this;
       };
-      this.removeOnChange = function() {
+      this.removeOnChange = function () {
         throw "not implemented";
       };
-      this.setValidationGroup = function(g) {
+      this.setValidationGroup = function (g) {
         throw 'not implemented'
       };
-      this.renderAdaptiveCard = function(attribute, card, data) {
+      this.renderAdaptiveCard = function (attribute, card, data) {
         Xrm.Portal.Form.get(attribute).cL.parent().next().next().remove();
         if (Xrm.Portal.Form.get(attribute).getValue().id != "") {
           var parsedCard = Xrm.Portal.Utility.AdaptiveCard.parseTemplate(card, data);
@@ -579,7 +637,7 @@ Xrm.Portal = {
         }
       }
     },
-    Generic: function(c) {
+    Generic: function (c) {
       this.s = Xrm.Portal.Utility.Selector;
       this.id = $(c).prop("id");
 
@@ -587,44 +645,44 @@ Xrm.Portal = {
       this.c = c;
       this.vg = "";
 
-      this.getValue = function() {
+      this.getValue = function () {
         return this.c.val();
       };
-      this.setValue = function(value) {
+      this.setValue = function (value) {
         this.c.val(value);
         if (this.cc != null) this.cc.updateView();
         return this;
       };
-      this.setVisible = function(isVisible, isMandatory) {
+      this.setVisible = function (isVisible, isMandatory) {
         var g = this.c.parent().parent();
         this.setRequired(isMandatory);
         isVisible ? g.show() : g.hide();
         return this;
       };
-      this.setDisable = function(isDisabled) {
+      this.setDisable = function (isDisabled) {
         this.c.prop('disabled', isDisabled);
         return this;
       };
-      this.setRequired = function(isRequired, customFunction, customMessage) {
+      this.setRequired = function (isRequired, customFunction, customMessage) {
         var g = c.parent().siblings(".info");
         isRequired || customFunction != undefined ?
           Xrm.Portal.Utility.Validation.setValidation(g, this, isRequired, this.vg, customFunction, customMessage) :
           Xrm.Portal.Utility.Validation.removeValidation(g, this);
         return this;
       };
-      this.attachOnChange = function(callback, triggerOnLoad) {
+      this.attachOnChange = function (callback, triggerOnLoad) {
         Xrm.Portal.Utility.Event.attachOnChange(this.c, callback, triggerOnLoad);
         return this;
       };
-      this.removeOnChange = function() {
+      this.removeOnChange = function () {
         Xrm.Portal.Utility.Event.removeOnChange(this.c);
         return this;
       };
-      this.setValidationGroup = function(g) {
+      this.setValidationGroup = function (g) {
         this.vg = g;
         return this;
       };
-      this.transformToCanvas = function() {
+      this.transformToCanvas = function () {
         this.c.hide();
         if (this.c.parent().children().last()[0].tagName !== "CANVAS") {
           var canvasId = this.id + "Canvas";
@@ -633,7 +691,7 @@ Xrm.Portal = {
         }
       }
     },
-    Lookup: function(c) {
+    Lookup: function (c) {
       this.s = Xrm.Portal.Utility.Selector;
       this.id = $(c).prop("id");
 
@@ -642,17 +700,17 @@ Xrm.Portal = {
       this.cE = this.s.getLookupEntity(this.id);
       this.vg = "";
 
-      this.enableOneClick = function() {
+      this.enableOneClick = function () {
         this.cN.on('click', () => this.cL.siblings('div.input-group-btn').children('button.launchentitylookup').click());
       };
-      this.getValue = function() {
+      this.getValue = function () {
         return {
           "id": this.cL.val(),
           "name": this.cN.val(),
           "logicalname": this.cE.val()
         };
       };
-      this.setValue = function(value, name, logicalName) {
+      this.setValue = function (value, name, logicalName) {
         if (value != null && value.hasOwnProperty('id') && value.hasOwnProperty('name') && value.hasOwnProperty('logicalname')) {
           this.cL.val(value.id);
           this.cN.val(value.name);
@@ -664,92 +722,92 @@ Xrm.Portal = {
         }
         return this;
       };
-      this.setVisible = function(isVisible, isMandatory) {
+      this.setVisible = function (isVisible, isMandatory) {
         this.setRequired(isMandatory);
         var g = this.cL.parent().parent().parent();
         isVisible ? g.show() : g.hide();
         return this;
       };
-      this.setDisable = function(isDisabled) {
+      this.setDisable = function (isDisabled) {
         this.cN.prop('disabled', isDisabled);
         this.cN.siblings('div.input-group-btn').toggle(!isDisabled);
         return this;
       };
-      this.setRequired = function(isRequired, customFunction, customMessage) {
+      this.setRequired = function (isRequired, customFunction, customMessage) {
         var g = this.cL.parent().parent().siblings(".info");
         isRequired || customFunction != undefined ?
           Xrm.Portal.Utility.Validation.setValidation(g, this, isRequired, this.vg, customFunction, customMessage) :
           Xrm.Portal.Utility.Validation.removeValidation(g, this);
         return this;
       };
-      this.attachOnChange = function(callback) {
+      this.attachOnChange = function (callback) {
         Xrm.Portal.Utility.Event.attachOnChange(this.cL, callback);
         return this;
       };
-      this.removeOnChange = function() {
+      this.removeOnChange = function () {
         Xrm.Portal.Utility.Event.removeOnChange(this.cL);
         return this;
       };
-      this.setValidationGroup = function(g) {
+      this.setValidationGroup = function (g) {
         this.vg = g;
         return this;
       };
     },
-    Checkbox: function(c) {
+    Checkbox: function (c) {
       this.s = Xrm.Portal.Utility.Selector;
       this.id = $(c).prop("id");
 
       this.c = c;
       this.vg = "";
 
-      this.getValue = function() {
+      this.getValue = function () {
         return this.c.prop("checked");
       };
-      this.setValue = function(value) {
+      this.setValue = function (value) {
         this.c.prop("checked", value);
         return this;
       };
-      this.setVisible = function(isVisible, isMandatory) {
+      this.setVisible = function (isVisible, isMandatory) {
         var g = this.c.parent().parent().parent();
         this.setRequired(isMandatory);
         isVisible ? g.show() : g.hide();
         return this;
       };
-      this.setDisable = function(isDisabled) {
+      this.setDisable = function (isDisabled) {
         this.c.prop('disabled', isDisabled);
         return this;
       };
-      this.setRequired = function(isRequired, customFunction, customMessage) {
+      this.setRequired = function (isRequired, customFunction, customMessage) {
         var g = c.parent().parent().siblings(".info");
         isRequired || customFunction != undefined ?
           Xrm.Portal.Utility.Validation.setValidation(g, this, isRequired, this.vg, customFunction, customMessage) :
           Xrm.Portal.Utility.Validation.removeValidation(g, this);
         return this;
       };
-      this.attachOnChange = function(callback) {
+      this.attachOnChange = function (callback) {
         Xrm.Portal.Utility.Event.attachOnChange(this.c, callback);
         return this;
       };
-      this.removeOnChange = function() {
+      this.removeOnChange = function () {
         Xrm.Portal.Utility.Event.removeOnChange(this.c);
         return this;
       };
-      this.setValidationGroup = function(g) {
+      this.setValidationGroup = function (g) {
         this.vg = g;
         return this;
       };
     },
-    Radio: function(c) {
+    Radio: function (c) {
       this.s = Xrm.Portal.Utility.Selector;
       this.id = $(c).prop("id");
 
       this.c = c;
       this.vg = "";
 
-      this.getValue = function() {
+      this.getValue = function () {
         return this.c.find("input:checked").val();
       };
-      this.setValue = function(value) {
+      this.setValue = function (value) {
         if (value != null) {
           this.c.find("input[value*=" + value + "]").prop("checked", value);
         } else {
@@ -758,84 +816,84 @@ Xrm.Portal = {
 
         return this;
       };
-      this.setVisible = function(isVisible, isMandatory) {
+      this.setVisible = function (isVisible, isMandatory) {
         var g = this.c.parent().parent();
         this.setRequired(isMandatory);
         isVisible ? g.show() : g.hide();
         return this;
       };
-      this.setDisable = function(isDisabled) {
+      this.setDisable = function (isDisabled) {
         this.c.find('input[type=radio]').prop("disabled", isDisabled);
         return this;
       };
-      this.setRequired = function(isRequired, customFunction, customMessage) {
+      this.setRequired = function (isRequired, customFunction, customMessage) {
         var g = c.parent().siblings(".info");
         isRequired || customFunction != undefined ?
           Xrm.Portal.Utility.Validation.setValidation(g, this, isRequired, this.vg, customFunction, customMessage) :
           Xrm.Portal.Utility.Validation.removeValidation(g, this);
         return this;
       };
-      this.attachOnChange = function(callback) {
+      this.attachOnChange = function (callback) {
         Xrm.Portal.Utility.Event.attachOnChange(this.c, callback);
         return this;
       };
-      this.removeOnChange = function() {
+      this.removeOnChange = function () {
         Xrm.Portal.Utility.Event.removeOnChange(this.c);
         return this;
       };
-      this.setValidationGroup = function(g) {
+      this.setValidationGroup = function (g) {
         this.vg = g;
         return this;
       };
     },
-    DatetimePicker: function(c) {
+    DatetimePicker: function (c) {
       this.s = Xrm.Portal.Utility.Selector;
       this.id = $(c).prop("id");
 
       this.c = c;
       this.vg = "";
 
-      this.getValue = function() {
+      this.getValue = function () {
         return this.c.val();
       };
-      this.getData = function() {
+      this.getData = function () {
         return this.c.next().data('DateTimePicker');
       };
-      this.setValue = function(value) {
+      this.setValue = function (value) {
         this.c.val(value);
         return this;
       };
-      this.setVisible = function(isVisible, isMandatory) {
+      this.setVisible = function (isVisible, isMandatory) {
         var g = this.c.parent().parent();
         this.setRequired(isMandatory);
         isVisible ? g.show() : g.hide();
         return this;
       };
-      this.setDisable = function(isDisabled) {
+      this.setDisable = function (isDisabled) {
         this.s.getTextLabel(this.id).prop('disabled', isDisabled);
         return this;
       };
-      this.setRequired = function(isRequired, customFunction, customMessage) {
+      this.setRequired = function (isRequired, customFunction, customMessage) {
         var g = c.parent().siblings(".info");
         isRequired || customFunction != undefined ?
           Xrm.Portal.Utility.Validation.setValidation(g, this, isRequired, this.vg, customFunction, customMessage) :
           Xrm.Portal.Utility.Validation.removeValidation(g, this);
         return this;
       };
-      this.attachOnChange = function(callback) {
+      this.attachOnChange = function (callback) {
         Xrm.Portal.Utility.Event.attachDateTimePickerOnChange(this.c, callback);
         return this;
       };
-      this.removeOnChange = function() {
+      this.removeOnChange = function () {
         Xrm.Portal.Utility.Event.removeOnChange(this.c);
         return this;
       };
-      this.setValidationGroup = function(g) {
+      this.setValidationGroup = function (g) {
         this.vg = g;
         return this;
       };
     },
-    Canvas: function(id) {
+    Canvas: function (id) {
       var canvas, context, tool;
 
       function init(id) {
@@ -877,7 +935,7 @@ Xrm.Portal = {
 
         // This is called when you start holding down the mouse button.
         // This starts the pencil drawing.
-        this.mousedown = function(ev) {
+        this.mousedown = function (ev) {
           context.beginPath();
           context.moveTo(ev._x, ev._y);
           tool.started = true;
@@ -886,7 +944,7 @@ Xrm.Portal = {
         // This function is called every time you move the mouse. Obviously, it only 
         // draws if the tool.started state is set to true (when you are holding down 
         // the mouse button).
-        this.mousemove = function(ev) {
+        this.mousemove = function (ev) {
           if (tool.started) {
             context.lineTo(ev._x, ev._y);
             context.stroke();
@@ -894,7 +952,7 @@ Xrm.Portal = {
         };
 
         // This is called when you release the mouse button.
-        this.mouseup = function(ev) {
+        this.mouseup = function (ev) {
           if (tool.started) {
             tool.mousemove(ev);
             tool.started = false;
